@@ -1,11 +1,11 @@
-name: Deploy Warren to Cloud Run
+name: push-warren-image
 
 on:
   push:
     branches: [ main ]
     paths:
       - 'images/warren/**'
-      - '.github/workflows/deploy-warren.yml'
+      - '.github/workflows/push-warren-image.yml'
 
 env:
   REGISTRY_LOCATION: 'asia-northeast1'

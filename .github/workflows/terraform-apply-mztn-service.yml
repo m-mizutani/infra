@@ -6,6 +6,11 @@ on:
     paths:
       - 'google-cloud/mztn-service/**'
       - '.github/workflows/terraform-apply-mztn-service.yml'
+  workflow_run:
+    workflows: ["push-warren-image"]
+    types:
+      - completed
+    branches: [ main ]
 
 env:
   TF_VERSION: '1.5.0'
@@ -14,6 +19,8 @@ jobs:
   terraform:
     name: 'Terraform Apply'
     runs-on: ubuntu-latest
+    # Only run if triggered by push or successful workflow_run
+    if: ${{ github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' }}
 
     # for Workload Identity
     permissions:
