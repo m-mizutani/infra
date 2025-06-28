@@ -8,15 +8,14 @@ on:
       - '.github/workflows/deploy-warren.yml'
 
 env:
-  TF_VERSION: '1.5.0'
   REGISTRY_LOCATION: 'asia-northeast1'
   PROJECT_ID: 'mztn-service'
   REPOSITORY: 'container-images'
   IMAGE: 'warren'
 
 jobs:
-  build-and-deploy:
-    name: 'Build Docker Image and Deploy to Cloud Run'
+  build-and-update:
+    name: 'Build Docker Image and Update Terraform Config'
     runs-on: ubuntu-latest
 
     # for Workload Identity
@@ -68,33 +67,10 @@ jobs:
       run: |
         cd google-cloud/mztn-service
         sed -i 's|warren_image_sha256 = ".*"|warren_image_sha256 = "${{ steps.digest.outputs.sha256 }}"|' locals.tf
-        
+
         # Verify the change
         echo "Updated locals.tf:"
         grep "warren_image_sha256" locals.tf
-
-    # Setup Terraform CLI
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: ${{ env.TF_VERSION }}
-
-    # Initialize Terraform
-    - name: Terraform Init
-      run: terraform init
-      working-directory: google-cloud/mztn-service
-
-    # Terraform Plan
-    - name: Terraform Plan
-      run: terraform plan -input=false
-      working-directory: google-cloud/mztn-service
-
-    # Apply Terraform changes to update Cloud Run service
-    - name: Terraform Apply
-      run: terraform apply -auto-approve -input=false
-      working-directory: google-cloud/mztn-service
-      env:
-        TF_IN_AUTOMATION: true
 
     # Commit the updated locals.tf
     - name: Commit changes
@@ -105,8 +81,9 @@ jobs:
         git diff --staged --quiet || git commit -m "Update Warren image to ${{ steps.digest.outputs.sha256 }}"
         git push
 
-    # Output the deployed service URL
-    - name: Output service URL
+    # Output the new image digest
+    - name: Output new image digest
       run: |
-        echo "Warren service deployed successfully!"
-        echo "Service URL: https://warren-$(gcloud projects describe ${{ env.PROJECT_ID }} --format='value(projectNumber)').${{ env.REGISTRY_LOCATION }}.run.app" 
+        echo "Warren image updated successfully!"
+        echo "New image digest: ${{ steps.digest.outputs.sha256 }}"
+        echo "Terraform will be applied automatically by terraform-apply-mztn-service workflow" 
