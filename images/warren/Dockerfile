@@ -4,5 +4,6 @@ COPY policy /policy
 COPY config /config
 
 ENV WARREN_POLICY=/policy
+ENV LOG_LEVEL=debug
 
 ENTRYPOINT ["/warren", "serve"]

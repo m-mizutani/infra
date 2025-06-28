@@ -1,0 +1,112 @@
+name: Deploy Warren to Cloud Run
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'images/warren/**'
+      - '.github/workflows/deploy-warren.yml'
+
+env:
+  TF_VERSION: '1.5.0'
+  REGISTRY_LOCATION: 'asia-northeast1'
+  PROJECT_ID: 'mztn-service'
+  REPOSITORY: 'container-images'
+  IMAGE: 'warren'
+
+jobs:
+  build-and-deploy:
+    name: 'Build Docker Image and Deploy to Cloud Run'
+    runs-on: ubuntu-latest
+
+    # for Workload Identity
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    # Authenticate to Google Cloud using Workload Identity
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        workload_identity_provider: 'projects/507354148656/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
+        service_account: 'github-actions@mztn-service.iam.gserviceaccount.com'
+
+    # Configure Docker to use the gcloud command-line tool as a credential helper for authentication
+    - name: Configure Docker
+      run: gcloud auth configure-docker ${{ env.REGISTRY_LOCATION }}-docker.pkg.dev
+
+    # Build the Docker image
+    - name: Build Docker image
+      run: |
+        cd images/warren
+        docker build -t ${{ env.REGISTRY_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:latest .
+
+    # Push the Docker image to Artifact Registry
+    - name: Push Docker image
+      run: |
+        docker push ${{ env.REGISTRY_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:latest
+
+    # Get the SHA256 digest of the pushed image
+    - name: Get image digest
+      id: digest
+      run: |
+        DIGEST=$(gcloud artifacts docker images describe \
+          ${{ env.REGISTRY_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:latest \
+          --format='value(image_summary.digest)')
+        echo "sha256=${DIGEST}" >> $GITHUB_OUTPUT
+        echo "Image digest: ${DIGEST}"
+
+    # Update locals.tf with new image SHA256
+    - name: Update locals.tf
+      run: |
+        cd google-cloud/mztn-service
+        sed -i 's|warren_image_sha256 = ".*"|warren_image_sha256 = "${{ steps.digest.outputs.sha256 }}"|' locals.tf
+        
+        # Verify the change
+        echo "Updated locals.tf:"
+        grep "warren_image_sha256" locals.tf
+
+    # Setup Terraform CLI
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    # Initialize Terraform
+    - name: Terraform Init
+      run: terraform init
+      working-directory: google-cloud/mztn-service
+
+    # Terraform Plan
+    - name: Terraform Plan
+      run: terraform plan -input=false
+      working-directory: google-cloud/mztn-service
+
+    # Apply Terraform changes to update Cloud Run service
+    - name: Terraform Apply
+      run: terraform apply -auto-approve -input=false
+      working-directory: google-cloud/mztn-service
+      env:
+        TF_IN_AUTOMATION: true
+
+    # Commit the updated locals.tf
+    - name: Commit changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add google-cloud/mztn-service/locals.tf
+        git diff --staged --quiet || git commit -m "Update Warren image to ${{ steps.digest.outputs.sha256 }}"
+        git push
+
+    # Output the deployed service URL
+    - name: Output service URL
+      run: |
+        echo "Warren service deployed successfully!"
+        echo "Service URL: https://warren-$(gcloud projects describe ${{ env.PROJECT_ID }} --format='value(projectNumber)').${{ env.REGISTRY_LOCATION }}.run.app" 
