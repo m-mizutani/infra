@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'terraform/mztn-service/**'
+      - 'google-cloud/mztn-service/**'
       - '.github/workflows/terraform-apply-mztn-service.yml'
 
 env:
@@ -23,7 +23,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: terraform/mztn-service
+        working-directory: google-cloud/mztn-service
 
     steps:
     # Checkout the repository to the GitHub Actions runner
