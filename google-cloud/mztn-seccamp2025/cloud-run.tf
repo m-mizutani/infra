@@ -45,7 +45,7 @@ resource "google_cloud_run_v2_service" "warren" {
       }
       env {
         name  = "WARREN_SLACK_CHANNEL_NAME"
-        value = "alert"
+        value = "security-alert"
       }
       env {
         name  = "WARREN_FIRESTORE_PROJECT_ID"
@@ -73,7 +73,7 @@ resource "google_cloud_run_v2_service" "warren" {
       }
       env {
         name  = "WARREN_SLACK_CLIENT_ID"
-        value = "291144675891.8985225175856"
+        value = "9173148718743.9202038479873"
       }
       env {
         name  = "WARREN_FRONTEND_URL"
