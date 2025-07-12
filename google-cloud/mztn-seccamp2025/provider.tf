@@ -8,8 +8,7 @@ terraform {
   }
 
   backend "gcs" {
-    bucket = "mztn-terraform"
-    prefix = "mztn-seccamp2025"
+    bucket = "mztn-seccamp2025-terraform"
   }
 }
 
