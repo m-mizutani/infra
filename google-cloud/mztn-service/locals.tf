@@ -7,7 +7,7 @@ locals {
   github_repository = "m-mizutani/infra"
 
   # Warren configuration
-  warren_image_sha256 = "sha256:bfdcdb2d3d6a1c1700a2e8ca4f4900a42b91917f4c183c3ecae15035386ca2a8"
+  warren_image_sha256 = "sha256:866ebc2b3948ef266220e7bd86444a8c41c013615af053500dc6cb164780678b"
   warren_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/warren@${local.warren_image_sha256}"
 
   # Warren secrets
