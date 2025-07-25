@@ -85,7 +85,7 @@ resource "google_cloud_run_v2_service" "warren" {
       }
       env {
         name  = "WARREN_LANG"
-        value = "Japanese"
+        value = "English"
       }
 
       # Secrets - dynamically generated from locals.warren_secrets
