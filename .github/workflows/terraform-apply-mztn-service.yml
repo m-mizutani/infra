@@ -7,7 +7,7 @@ on:
       - 'google-cloud/mztn-service/**'
       - '.github/workflows/terraform-apply-mztn-service.yml'
   workflow_run:
-    workflows: ["push-warren-seccamp-image"]
+    workflows: ["push-warren-image"]
     types:
       - completed
     branches: [ main ]
