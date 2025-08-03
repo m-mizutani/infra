@@ -1,3 +1,9 @@
-package alert.guardduty
+package alert.seccamp
 
-alert contains {}
+title := input.title if {
+    input.title
+} else := ""
+
+alert contains {
+    "title": title,
+}
