@@ -1,4 +1,4 @@
-FROM ghcr.io/secmon-lab/warren:b39867041b52491f1edce6e5fb0879c57f1941ec
+FROM ghcr.io/secmon-lab/warren:1c79734e80a6a92b71b39e905b22707ab77ea047
 
 COPY policy /policy
 # COPY config /config
