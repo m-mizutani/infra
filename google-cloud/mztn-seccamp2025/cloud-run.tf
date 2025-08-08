@@ -72,10 +72,6 @@ resource "google_cloud_run_v2_service" "warren" {
         value = "v1/"
       }
       env {
-        name  = "WARREN_SLACK_CLIENT_ID"
-        value = "9173148718743.9202038479873"
-      }
-      env {
         name  = "WARREN_FRONTEND_URL"
         value = "https://warren-${data.google_project.this.number}.${local.region}.run.app"
       }
