@@ -84,11 +84,11 @@ resource "google_cloud_run_v2_service" "warren" {
         value = "1"
       }
       env {
-        name = "WARREN_NO_AUTHENTICATION"
+        name  = "WARREN_NO_AUTHENTICATION"
         value = "1"
       }
       env {
-        name = "WARREN_NO_AUTHORIZATION"
+        name  = "WARREN_NO_AUTHORIZATION"
         value = "1"
       }
       env {
