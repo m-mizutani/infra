@@ -22,6 +22,6 @@ locals {
   ]
 
   # Backstream configuration
-  backstream_image_sha256 = "sha256:36cf23d4031a42ff00fa5c8409262dc51c763c53e13b4708110ea9f62f7e9492"
+  backstream_image_sha256 = "sha256:bcc9c465a2b085ef9e99e9b74ac708cfaa7d9d3557f4fcde70b9af5590560765"
   backstream_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream@${local.backstream_image_sha256}"
 }
