@@ -9,4 +9,5 @@ ENV BACKSTREAM_LOG_FORMAT="json"
 # Expose port 8080
 EXPOSE 8080
 
+# Run
 ENTRYPOINT ["/backstream", "serve"]
