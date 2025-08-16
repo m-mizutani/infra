@@ -1,5 +1,7 @@
 FROM ghcr.io/m-mizutani/backstream:v0.0.4
 
+COPY policy /policy
+
 # Open port 8080
 ENV BACKSTREAM_ADDR="0.0.0.0:8080"
 ENV BACKSTREAM_LOG_FORMAT=json
