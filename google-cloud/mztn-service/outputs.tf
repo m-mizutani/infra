@@ -28,4 +28,14 @@ output "docker_registry_url" {
 output "warren_image_uri" {
   description = "The full Warren image URI"
   value       = local.warren_image_uri
+}
+
+output "backstream_image_uri" {
+  description = "The full Backstream image URI"
+  value       = local.backstream_image_uri
+}
+
+output "cloud_run_service_urls" {
+  description = "URLs of deployed Cloud Run services"
+  value       = { for k, v in google_cloud_run_v2_service.services : k => v.uri }
 } 

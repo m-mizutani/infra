@@ -6,84 +6,12 @@ on:
     paths:
       - 'images/backstream/**'
       - '.github/workflows/push-backstream-image.yml'
-
-env:
-  REGISTRY_LOCATION: 'asia-northeast1'
-  PROJECT_ID: 'mztn-service'
-  REPOSITORY: 'container-images'
-  IMAGE: 'backstream'
+      - '.github/workflows/build-and-push-image.yml'
 
 jobs:
-  build-and-update:
-    name: 'Build Docker Image and Update Terraform Config'
-    runs-on: ubuntu-latest
-
-    # for Workload Identity
-    permissions:
-      contents: write
-      id-token: write
-
-    steps:
-    # Checkout the repository to the GitHub Actions runner
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-
-    # Authenticate to Google Cloud using Workload Identity
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v1
-      with:
-        workload_identity_provider: 'projects/507354148656/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
-        service_account: 'github-actions@mztn-service.iam.gserviceaccount.com'
-
-    # Configure Docker to use the gcloud command-line tool as a credential helper for authentication
-    - name: Configure Docker
-      run: gcloud auth configure-docker ${{ env.REGISTRY_LOCATION }}-docker.pkg.dev
-
-    # Build the Docker image
-    - name: Build Docker image
-      run: |
-        cd images/backstream
-        docker build -t ${{ env.REGISTRY_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:latest .
-
-    # Push the Docker image to Artifact Registry
-    - name: Push Docker image
-      run: |
-        docker push ${{ env.REGISTRY_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:latest
-
-    # Get the SHA256 digest of the pushed image
-    - name: Get image digest
-      id: digest
-      run: |
-        DIGEST=$(gcloud artifacts docker images describe \
-          ${{ env.REGISTRY_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:latest \
-          --format='value(image_summary.digest)')
-        echo "sha256=${DIGEST}" >> $GITHUB_OUTPUT
-        echo "Image digest: ${DIGEST}"
-
-    # Update locals.tf with new image SHA256
-    - name: Update locals.tf
-      run: |
-        cd google-cloud/mztn-service
-        sed -i 's|warren_image_sha256 = ".*"|warren_image_sha256 = "${{ steps.digest.outputs.sha256 }}"|' locals.tf
-
-        # Verify the change
-        echo "Updated locals.tf:"
-        grep "warren_image_sha256" locals.tf
-
-    # Commit the updated locals.tf
-    - name: Commit changes
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add google-cloud/mztn-service/locals.tf
-        git diff --staged --quiet || git commit -m "Update Warren image to ${{ steps.digest.outputs.sha256 }}"
-        git push
-
-    # Output the new image digest
-    - name: Output new image digest
-      run: |
-        echo "Warren image updated successfully!"
-        echo "New image digest: ${{ steps.digest.outputs.sha256 }}"
-        echo "Terraform will be applied automatically by terraform-apply-mztn-service workflow" 
+  build:
+    uses: ./.github/workflows/build-and-push-image.yml
+    with:
+      image_name: backstream
+      image_path: images/backstream
+    secrets: inherit
