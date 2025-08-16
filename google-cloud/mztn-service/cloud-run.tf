@@ -121,4 +121,54 @@ resource "google_cloud_run_service_iam_member" "warren_public_access" {
   service  = google_cloud_run_v2_service.warren[0].name
   role     = "roles/run.invoker"
   member   = "allUsers"
+}
+
+# Cloud Run service for Backstream
+
+resource "google_cloud_run_v2_service" "backstream" {
+  count    = local.backstream_image_sha256 != "" ? 1 : 0
+  name     = "backstream"
+  location = local.region
+
+  template {
+    service_account = google_service_account.backstream_runner.email
+
+    scaling {
+      min_instance_count = 0
+      max_instance_count = 1
+    }
+
+    containers {
+      image = local.backstream_image_uri
+
+      resources {
+        limits = {
+          cpu    = "1000m"
+          memory = "128Mi"
+        }
+        cpu_idle          = true
+        startup_cpu_boost = false
+      }
+
+      ports {
+        container_port = 8080
+        name           = "http1"
+      }
+    }
+  }
+
+  depends_on = [
+    google_project_service.required_apis,
+    google_service_account.backstream_runner,
+  ]
+}
+
+# Allow public access to the Backstream Cloud Run service
+resource "google_cloud_run_service_iam_member" "backstream_public_access" {
+  count = length(google_cloud_run_v2_service.backstream) > 0 ? 1 : 0
+
+  location = google_cloud_run_v2_service.backstream[0].location
+  service  = google_cloud_run_v2_service.backstream[0].name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 } 
