@@ -21,7 +21,8 @@ verify_google_jwt(token) := claims if {
 
 allow if {
 	claims := verify_google_jwt(input.header.Token)
-	claims[1].sub == [
-		"110793906496191723686",
-	][_]
+	claims[1].sub in [
+		"110793906496191723686", # for personal
+		"111098847180350051251", # for work
+	]
 }
