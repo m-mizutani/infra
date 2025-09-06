@@ -6,16 +6,17 @@ on:
     paths:
       - 'images/warren/**'
       - '.github/workflows/push-warren-image.yml'
-      - '.github/workflows/build-and-push-image.yml'
+      - '.github/workflows/deploy-cloud-run.yml'
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
 
 jobs:
-  build:
-    uses: ./.github/workflows/build-and-push-image.yml
+  deploy:
+    uses: ./.github/workflows/deploy-cloud-run.yml
     with:
-      image_name: warren
+      service_name: warren
       image_path: images/warren
+      project_id: mztn-service
     secrets: inherit

@@ -55,6 +55,12 @@ resource "google_cloud_run_v2_service" "services" {
     }
   }
 
+  lifecycle {
+    ignore_changes = [
+      template[0].containers[0].image,
+    ]
+  }
+
   depends_on = [
     google_project_service.required_apis,
     google_service_account.warren_runner,

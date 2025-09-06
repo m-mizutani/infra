@@ -1,0 +1,106 @@
+name: deploy-cloud-run
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        required: true
+        type: string
+        description: 'Name of the Cloud Run service (warren or backstream)'
+      image_path:
+        required: true
+        type: string
+        description: 'Path to the image directory (e.g., images/warren)'
+      project_id:
+        required: true
+        type: string
+        description: 'GCP Project ID'
+      region:
+        required: false
+        type: string
+        default: 'asia-northeast1'
+        description: 'GCP Region'
+      repository:
+        required: false
+        type: string
+        default: 'container-images'
+        description: 'Artifact Registry repository name'
+
+env:
+  REGISTRY_LOCATION: ${{ inputs.region }}
+  PROJECT_ID: ${{ inputs.project_id }}
+  REPOSITORY: ${{ inputs.repository }}
+
+jobs:
+  deploy:
+    name: 'Build, Push, and Deploy to Cloud Run'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        workload_identity_provider: 'projects/507354148656/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
+        service_account: 'github-actions@${{ inputs.project_id }}.iam.gserviceaccount.com'
+
+    - name: Setup Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+
+    - name: Configure Docker
+      run: gcloud auth configure-docker ${{ env.REGISTRY_LOCATION }}-docker.pkg.dev
+
+    - name: Build Docker image
+      run: |
+        cd ${{ inputs.image_path }}
+        IMAGE_URL="${{ env.REGISTRY_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ inputs.service_name }}"
+        docker build -t ${IMAGE_URL}:latest .
+        echo "IMAGE_URL=${IMAGE_URL}" >> $GITHUB_ENV
+
+    - name: Push Docker image
+      run: |
+        docker push ${{ env.IMAGE_URL }}:latest
+
+    - name: Get image digest
+      id: digest
+      run: |
+        DIGEST=$(gcloud artifacts docker images describe \
+          ${{ env.IMAGE_URL }}:latest \
+          --format='value(image_summary.digest)')
+        echo "sha256=${DIGEST}" >> $GITHUB_OUTPUT
+        echo "full_image=${{ env.IMAGE_URL }}@sha256:${DIGEST}" >> $GITHUB_OUTPUT
+        echo "Image digest: sha256:${DIGEST}"
+
+    - name: Deploy to Cloud Run
+      run: |
+        gcloud run deploy ${{ inputs.service_name }} \
+          --image=${{ steps.digest.outputs.full_image }} \
+          --region=${{ env.REGISTRY_LOCATION }} \
+          --project=${{ env.PROJECT_ID }} \
+          --platform=managed \
+          --no-traffic
+
+        echo "Deployed image to Cloud Run (no traffic)"
+
+    - name: Promote traffic to new revision
+      run: |
+        gcloud run services update-traffic ${{ inputs.service_name }} \
+          --to-latest \
+          --region=${{ env.REGISTRY_LOCATION }} \
+          --project=${{ env.PROJECT_ID }}
+
+        echo "Traffic promoted to latest revision"
+
+    - name: Get service URL
+      run: |
+        SERVICE_URL=$(gcloud run services describe ${{ inputs.service_name }} \
+          --region=${{ env.REGISTRY_LOCATION }} \
+          --project=${{ env.PROJECT_ID }} \
+          --format='value(status.url)')
+        echo "Service URL: ${SERVICE_URL}"

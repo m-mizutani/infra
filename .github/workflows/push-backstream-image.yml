@@ -6,16 +6,17 @@ on:
     paths:
       - 'images/backstream/**'
       - '.github/workflows/push-backstream-image.yml'
-      - '.github/workflows/build-and-push-image.yml'
+      - '.github/workflows/deploy-cloud-run.yml'
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
 
 jobs:
-  build:
-    uses: ./.github/workflows/build-and-push-image.yml
+  deploy:
+    uses: ./.github/workflows/deploy-cloud-run.yml
     with:
-      image_name: backstream
+      service_name: backstream
       image_path: images/backstream
+      project_id: mztn-service
     secrets: inherit
