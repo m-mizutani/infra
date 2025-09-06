@@ -73,9 +73,9 @@ jobs:
         DIGEST=$(gcloud artifacts docker images describe \
           ${{ env.IMAGE_URL }}:latest \
           --format='value(image_summary.digest)')
-        echo "sha256=${DIGEST}" >> $GITHUB_OUTPUT
-        echo "full_image=${{ env.IMAGE_URL }}@sha256:${DIGEST}" >> $GITHUB_OUTPUT
-        echo "Image digest: sha256:${DIGEST}"
+        echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+        echo "full_image=${{ env.IMAGE_URL }}@${DIGEST}" >> $GITHUB_OUTPUT
+        echo "Image digest: ${DIGEST}"
 
     - name: Deploy to Cloud Run
       run: |
