@@ -64,6 +64,7 @@ locals {
       cpu             = "1000m"
       memory          = "128Mi"
       max_instances   = 1
+      timeout         = "900s" # 15 minutes
       env_vars        = {}
       secrets         = []
     }
@@ -75,6 +76,7 @@ locals {
       cpu             = "1000m"
       memory          = "128Mi"
       max_instances   = 1
+      timeout         = "900s" # 15 minutes
       env_vars        = {}
       secrets         = []
     }

@@ -7,6 +7,7 @@ resource "google_cloud_run_v2_service" "services" {
 
   template {
     service_account = each.value.service_account
+    timeout         = lookup(each.value, "timeout", "300s")
 
     scaling {
       min_instance_count = 0
