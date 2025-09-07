@@ -25,6 +25,10 @@ locals {
   backstream_image_sha256 = "sha256:f6de5a1b792b54349941608904d2a2be46f7c3c4c90ca14c836f904b08e41ff4"
   backstream_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream@${local.backstream_image_sha256}"
 
+  # Backstream-lycaon configuration
+  backstream_lycaon_image_sha256 = "sha256:219930de2d9eae90c410ccc12d09dfc41ea2973a19a710cb717da2b80502544e"
+  backstream_lycaon_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream-lycaon@${local.backstream_lycaon_image_sha256}"
+
   # Cloud Run services configuration
   cloud_run_services = {
     warren = {
@@ -57,6 +61,17 @@ locals {
       enabled         = local.backstream_image_sha256 != ""
       image_uri       = local.backstream_image_uri
       service_account = google_service_account.backstream_runner.email
+      cpu             = "1000m"
+      memory          = "128Mi"
+      max_instances   = 1
+      env_vars        = {}
+      secrets         = []
+    }
+
+    backstream-lycaon = {
+      enabled         = local.backstream_lycaon_image_sha256 != ""
+      image_uri       = local.backstream_lycaon_image_uri
+      service_account = google_service_account.backstream_lycaon_runner.email
       cpu             = "1000m"
       memory          = "128Mi"
       max_instances   = 1

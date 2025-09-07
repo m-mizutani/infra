@@ -65,6 +65,7 @@ resource "google_cloud_run_v2_service" "services" {
     google_project_service.required_apis,
     google_service_account.warren_runner,
     google_service_account.backstream_runner,
+    google_service_account.backstream_lycaon_runner,
     google_secret_manager_secret.warren_secrets,
     google_firestore_database.warren_database,
     google_storage_bucket.warren_bucket,
