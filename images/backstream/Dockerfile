@@ -1,4 +1,4 @@
-FROM ghcr.io/m-mizutani/backstream:a55518d8c741538c6c3acb9e7cf9587a1d67e209
+FROM ghcr.io/m-mizutani/backstream:fa677d658c3b59261e9ebf1f4a4be5d0a784a6ce
 
 COPY policy /policy
 
