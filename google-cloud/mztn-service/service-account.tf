@@ -20,4 +20,12 @@ resource "google_service_account" "backstream_lycaon_runner" {
   account_id   = "backstream-lycaon-runner"
   display_name = "Backstream-lycaon Runner Service Account"
   description  = "Service Account for Backstream-lycaon Cloud Run service"
+}
+
+# Service Account for Backstream-tamamo Cloud Run service
+
+resource "google_service_account" "backstream_tamamo_runner" {
+  account_id   = "backstream-tamamo-runner"
+  display_name = "Backstream-tamamo Runner Service Account"
+  description  = "Service Account for Backstream-tamamo Cloud Run service"
 } 

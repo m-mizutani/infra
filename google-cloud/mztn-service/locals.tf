@@ -29,6 +29,10 @@ locals {
   backstream_lycaon_image_sha256 = "sha256:219930de2d9eae90c410ccc12d09dfc41ea2973a19a710cb717da2b80502544e"
   backstream_lycaon_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream-lycaon@${local.backstream_lycaon_image_sha256}"
 
+  # Backstream-tamamo configuration
+  backstream_tamamo_image_sha256 = "sha256:6f0622b80aa405df05bbf35b8a209bc5b97fbd5a77adb762140866d815bb7781"
+  backstream_tamamo_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream-tamamo@${local.backstream_tamamo_image_sha256}"
+
   # Cloud Run services configuration
   cloud_run_services = {
     warren = {
@@ -73,6 +77,18 @@ locals {
       enabled         = local.backstream_lycaon_image_sha256 != ""
       image_uri       = local.backstream_lycaon_image_uri
       service_account = google_service_account.backstream_lycaon_runner.email
+      cpu             = "1000m"
+      memory          = "128Mi"
+      max_instances   = 1
+      timeout         = "900s" # 15 minutes
+      env_vars        = {}
+      secrets         = []
+    }
+
+    backstream-tamamo = {
+      enabled         = local.backstream_tamamo_image_sha256 != ""
+      image_uri       = local.backstream_tamamo_image_uri
+      service_account = google_service_account.backstream_tamamo_runner.email
       cpu             = "1000m"
       memory          = "128Mi"
       max_instances   = 1
