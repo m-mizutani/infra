@@ -1,0 +1,73 @@
+name: terraform-apply
+
+on:
+  workflow_call:
+    inputs:
+      working_directory:
+        required: true
+        type: string
+        description: 'Terraform working directory (e.g., google-cloud/mztn-service)'
+      project_id:
+        required: true
+        type: string
+        description: 'GCP Project ID for service account'
+      tf_version:
+        required: false
+        type: string
+        default: '1.5.0'
+        description: 'Terraform version'
+
+jobs:
+  terraform:
+    name: 'Terraform Apply'
+    runs-on: ubuntu-latest
+
+    # for Workload Identity
+    permissions:
+      contents: read
+      id-token: write
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working_directory }}
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Setup Terraform CLI
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: ${{ inputs.tf_version }}
+
+    # Authenticate to Google Cloud using Workload Identity
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        workload_identity_provider: 'projects/507354148656/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
+        service_account: 'github-actions@${{ inputs.project_id }}.iam.gserviceaccount.com'
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    # Validates the configuration files in a directory, referring only to the configuration and not accessing any remote services
+    - name: Terraform Validate
+      run: terraform validate
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      run: terraform plan -input=false
+
+    # Apply the configuration
+    - name: Terraform Apply
+      run: terraform apply -auto-approve -input=false
+      env:
+        TF_IN_AUTOMATION: true

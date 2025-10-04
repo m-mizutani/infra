@@ -38,8 +38,7 @@ locals {
   backstream_warren_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream-warren@${local.backstream_warren_image_sha256}"
 
   # Backstream-shepherd configuration
-  backstream_shepherd_image_sha256 = ""
-  backstream_shepherd_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream-shepherd@${local.backstream_shepherd_image_sha256}"
+  backstream_shepherd_image_uri = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream-shepherd:latest"
 
   # Cloud Run services configuration
   cloud_run_services = {
@@ -118,7 +117,7 @@ locals {
     }
 
     backstream-shepherd = {
-      enabled         = local.backstream_shepherd_image_sha256 != ""
+      enabled         = true
       image_uri       = local.backstream_shepherd_image_uri
       service_account = google_service_account.backstream_shepherd_runner.email
       cpu             = "1000m"

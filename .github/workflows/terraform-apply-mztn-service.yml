@@ -7,62 +7,10 @@ on:
       - 'google-cloud/mztn-service/**'
       - '.github/workflows/terraform-apply-mztn-service.yml'
 
-env:
-  TF_VERSION: '1.5.0'
-
 jobs:
   terraform:
-    name: 'Terraform Apply'
-    runs-on: ubuntu-latest
-    # Only run if triggered by push or successful workflow_run
-    if: ${{ github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' }}
-
-    # for Workload Identity
-    permissions:
-      contents: read
-      id-token: write
-
-    defaults:
-      run:
-        shell: bash
-        working-directory: google-cloud/mztn-service
-
-    steps:
-    # Checkout the repository to the GitHub Actions runner
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    # Setup Terraform CLI
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: ${{ env.TF_VERSION }}
-
-    # Authenticate to Google Cloud using Workload Identity
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v1
-      with:
-        workload_identity_provider: 'projects/507354148656/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
-        service_account: 'github-actions@mztn-service.iam.gserviceaccount.com'
-
-    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
-    - name: Terraform Init
-      run: terraform init
-
-    # Checks that all Terraform configuration files adhere to a canonical format
-    - name: Terraform Format
-      run: terraform fmt -check
-
-    # Validates the configuration files in a directory, referring only to the configuration and not accessing any remote services
-    - name: Terraform Validate
-      run: terraform validate
-
-    # Generates an execution plan for Terraform
-    - name: Terraform Plan
-      run: terraform plan -input=false
-
-    # Apply the configuration
-    - name: Terraform Apply
-      run: terraform apply -auto-approve -input=false
-      env:
-        TF_IN_AUTOMATION: true
+    uses: ./.github/workflows/terraform-apply.yml
+    with:
+      working_directory: google-cloud/mztn-service
+      project_id: mztn-service
+    secrets: inherit
