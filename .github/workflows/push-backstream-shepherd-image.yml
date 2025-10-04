@@ -20,3 +20,4 @@ jobs:
       image_path: images/backstream-shepherd
       project_id: mztn-service
     secrets: inherit
+
