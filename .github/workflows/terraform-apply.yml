@@ -62,10 +62,6 @@ jobs:
     - name: Terraform Validate
       run: terraform validate
 
-    # Generates an execution plan for Terraform
-    - name: Terraform Plan
-      run: terraform plan -input=false -lock-timeout=5m
-
     # Apply the configuration
     - name: Terraform Apply
       run: terraform apply -auto-approve -input=false -lock-timeout=5m
