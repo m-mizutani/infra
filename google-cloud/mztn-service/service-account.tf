@@ -36,4 +36,12 @@ resource "google_service_account" "backstream_warren_runner" {
   account_id   = "backstream-warren-runner"
   display_name = "Backstream-warren Runner Service Account"
   description  = "Service Account for Backstream-warren Cloud Run service"
+}
+
+# Service Account for Backstream-shepherd Cloud Run service
+
+resource "google_service_account" "backstream_shepherd_runner" {
+  account_id   = "backstream-shepherd-runner"
+  display_name = "Backstream-shepherd Runner Service Account"
+  description  = "Service Account for Backstream-shepherd Cloud Run service"
 } 
