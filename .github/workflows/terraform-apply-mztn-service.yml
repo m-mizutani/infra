@@ -7,6 +7,10 @@ on:
       - 'google-cloud/mztn-service/**'
       - '.github/workflows/terraform-apply-mztn-service.yml'
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   terraform:
     uses: ./.github/workflows/terraform-apply.yml
