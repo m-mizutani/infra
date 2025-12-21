@@ -1,3 +1,3 @@
-package auth
+package auth.http
 
 allow := true
