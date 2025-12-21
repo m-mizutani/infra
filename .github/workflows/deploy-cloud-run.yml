@@ -76,6 +76,10 @@ jobs:
       contents: read
       id-token: write
 
+    outputs:
+      digest: ${{ steps.digest.outputs.digest }}
+      full_image: ${{ steps.digest.outputs.full_image }}
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
