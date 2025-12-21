@@ -118,3 +118,29 @@ jobs:
       working_directory: ${{ inputs.terraform_directory }}
       project_id: ${{ inputs.project_id }}
     secrets: inherit
+
+  update-cloud-run:
+    name: 'Update Cloud Run Service'
+    needs: [push, terraform-apply]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        workload_identity_provider: 'projects/507354148656/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
+        service_account: 'github-actions@${{ inputs.project_id }}.iam.gserviceaccount.com'
+
+    - name: Setup Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+
+    - name: Update Cloud Run service with new image
+      run: |
+        gcloud run services update ${{ inputs.service_name }} \
+          --image=${{ needs.push.outputs.full_image }} \
+          --region=${{ inputs.region }} \
+          --project=${{ inputs.project_id }}
