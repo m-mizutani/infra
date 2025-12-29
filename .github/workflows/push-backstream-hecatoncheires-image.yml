@@ -1,0 +1,22 @@
+name: push-backstream-hecatoncheires-image
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'images/backstream-hecatoncheires/**'
+      - '.github/workflows/push-backstream-hecatoncheires-image.yml'
+      - '.github/workflows/deploy-cloud-run.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-cloud-run.yml
+    with:
+      service_name: backstream-hecatoncheires
+      image_path: images/backstream-hecatoncheires
+      project_id: mztn-service
+    secrets: inherit

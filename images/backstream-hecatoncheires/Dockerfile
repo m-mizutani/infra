@@ -1,0 +1,16 @@
+FROM ghcr.io/m-mizutani/backstream:5b03dc7bb49b3b3af2459a1157775a542f14278f
+
+COPY policy /policy
+
+# Open port 8080
+ENV BACKSTREAM_ADDR="0.0.0.0:8080"
+ENV BACKSTREAM_LOG_FORMAT=json
+ENV BACKSTREAM_LOG_LEVEL=debug
+ENV BACKSTREAM_POLICY=/policy
+ENV BACKSTREAM_NO_CLIENT_CODE=200
+
+# Expose port 8080
+EXPOSE 8080
+
+# Run
+ENTRYPOINT ["/backstream", "serve"]

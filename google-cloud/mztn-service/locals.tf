@@ -40,6 +40,10 @@ locals {
   # Backstream-shepherd configuration
   backstream_shepherd_image_uri = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream-shepherd:latest"
 
+  # Backstream-hecatoncheires configuration
+  backstream_hecatoncheires_image_sha256 = ""
+  backstream_hecatoncheires_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream-hecatoncheires@${local.backstream_hecatoncheires_image_sha256}"
+
   # Cloud Run services configuration
   cloud_run_services = {
     warren = {
@@ -120,6 +124,18 @@ locals {
       enabled         = true
       image_uri       = local.backstream_shepherd_image_uri
       service_account = google_service_account.backstream_shepherd_runner.email
+      cpu             = "1000m"
+      memory          = "128Mi"
+      max_instances   = 1
+      timeout         = "900s" # 15 minutes
+      env_vars        = {}
+      secrets         = []
+    }
+
+    backstream-hecatoncheires = {
+      enabled         = local.backstream_hecatoncheires_image_sha256 != ""
+      image_uri       = local.backstream_hecatoncheires_image_uri
+      service_account = google_service_account.backstream_hecatoncheires_runner.email
       cpu             = "1000m"
       memory          = "128Mi"
       max_instances   = 1
