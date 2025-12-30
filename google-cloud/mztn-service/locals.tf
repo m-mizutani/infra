@@ -59,6 +59,7 @@ locals {
   cloud_run_services = {
     warren = {
       enabled         = local.warren_image_sha256 != ""
+      public_access   = true
       image_uri       = local.warren_image_uri
       service_account = google_service_account.warren_runner.email
       cpu             = "1000m"
@@ -85,6 +86,7 @@ locals {
 
     backstream = {
       enabled         = local.backstream_image_sha256 != ""
+      public_access   = true
       image_uri       = local.backstream_image_uri
       service_account = google_service_account.backstream_runner.email
       cpu             = "1000m"
@@ -97,6 +99,7 @@ locals {
 
     backstream-lycaon = {
       enabled         = local.backstream_lycaon_image_sha256 != ""
+      public_access   = true
       image_uri       = local.backstream_lycaon_image_uri
       service_account = google_service_account.backstream_lycaon_runner.email
       cpu             = "1000m"
@@ -109,6 +112,7 @@ locals {
 
     backstream-tamamo = {
       enabled         = local.backstream_tamamo_image_sha256 != ""
+      public_access   = true
       image_uri       = local.backstream_tamamo_image_uri
       service_account = google_service_account.backstream_tamamo_runner.email
       cpu             = "1000m"
@@ -121,6 +125,7 @@ locals {
 
     backstream-warren = {
       enabled         = local.backstream_warren_image_sha256 != ""
+      public_access   = true
       image_uri       = local.backstream_warren_image_uri
       service_account = google_service_account.backstream_warren_runner.email
       cpu             = "1000m"
@@ -133,6 +138,7 @@ locals {
 
     backstream-shepherd = {
       enabled         = true
+      public_access   = true
       image_uri       = local.backstream_shepherd_image_uri
       service_account = google_service_account.backstream_shepherd_runner.email
       cpu             = "1000m"
@@ -145,6 +151,7 @@ locals {
 
     backstream-hecatoncheires = {
       enabled         = local.backstream_hecatoncheires_image_sha256 != ""
+      public_access   = true
       image_uri       = local.backstream_hecatoncheires_image_uri
       service_account = google_service_account.backstream_hecatoncheires_runner.email
       cpu             = "1000m"
@@ -157,6 +164,7 @@ locals {
 
     hecatoncheires = {
       enabled         = local.hecatoncheires_image_sha256 != ""
+      public_access   = true
       image_uri       = local.hecatoncheires_image_uri
       service_account = google_service_account.hecatoncheires_runner.email
       cpu             = "1000m"

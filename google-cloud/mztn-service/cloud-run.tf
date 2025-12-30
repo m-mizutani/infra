@@ -81,10 +81,13 @@ resource "google_cloud_run_v2_service" "services" {
 
 # Allow public access to Cloud Run services
 resource "google_cloud_run_service_iam_member" "public_access" {
-  for_each = google_cloud_run_v2_service.services
+  for_each = {
+    for k, v in local.cloud_run_services : k => v
+    if v.enabled && lookup(v, "public_access", false)
+  }
 
-  location = each.value.location
-  service  = each.value.name
+  location = google_cloud_run_v2_service.services[each.key].location
+  service  = google_cloud_run_v2_service.services[each.key].name
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
