@@ -47,7 +47,7 @@ resource "google_cloud_run_v2_service" "services" {
           name = env.value
           value_source {
             secret_key_ref {
-              secret = can(google_secret_manager_secret.warren_secrets[env.value]) ? google_secret_manager_secret.warren_secrets[env.value].secret_id : google_secret_manager_secret.hecatoncheires_secrets[env.value].secret_id
+              secret  = can(google_secret_manager_secret.warren_secrets[env.value]) ? google_secret_manager_secret.warren_secrets[env.value].secret_id : google_secret_manager_secret.hecatoncheires_secrets[env.value].secret_id
               version = "latest"
             }
           }
