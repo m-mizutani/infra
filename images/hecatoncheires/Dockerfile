@@ -1,4 +1,4 @@
-FROM ghcr.io/secmon-lab/hecatoncheires:d30b6731c62be5f8f228797be534caa6f699b353
+FROM ghcr.io/secmon-lab/hecatoncheires:fcb1a668ac253dc3c32001798ba873c97ef9ae20
 
 COPY config.toml /app/config.toml
 
