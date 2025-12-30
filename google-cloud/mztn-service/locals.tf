@@ -21,6 +21,13 @@ locals {
     "WARREN_IPDB_API_KEY",
   ]
 
+  # Hecatoncheires secrets
+  hecatoncheires_secrets = [
+    "HECATONCHEIRES_SLACK_CLIENT_SECRET",
+    "HECATONCHEIRES_SLACK_BOT_TOKEN",
+    "HECATONCHEIRES_SLACK_SIGNING_SECRET",
+  ]
+
   # Backstream configuration
   backstream_image_sha256 = "sha256:f6de5a1b792b54349941608904d2a2be46f7c3c4c90ca14c836f904b08e41ff4"
   backstream_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream@${local.backstream_image_sha256}"
@@ -43,6 +50,10 @@ locals {
   # Backstream-hecatoncheires configuration
   backstream_hecatoncheires_image_sha256 = ""
   backstream_hecatoncheires_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream-hecatoncheires@${local.backstream_hecatoncheires_image_sha256}"
+
+  # Hecatoncheires configuration
+  hecatoncheires_image_sha256 = ""
+  hecatoncheires_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/hecatoncheires@${local.hecatoncheires_image_sha256}"
 
   # Cloud Run services configuration
   cloud_run_services = {
@@ -142,6 +153,24 @@ locals {
       timeout         = "900s" # 15 minutes
       env_vars        = {}
       secrets         = []
+    }
+
+    hecatoncheires = {
+      enabled         = local.hecatoncheires_image_sha256 != ""
+      image_uri       = local.hecatoncheires_image_uri
+      service_account = google_service_account.hecatoncheires_runner.email
+      cpu             = "1000m"
+      memory          = "128Mi"
+      max_instances   = 1
+      timeout         = "300s"
+      env_vars = {
+        HECATONCHEIRES_FIRESTORE_PROJECT_ID  = "mztn-service"
+        HECATONCHEIRES_FIRESTORE_DATABASE_ID = google_firestore_database.hecatoncheires_database.name
+        HECATONCHEIRES_SLACK_CLIENT_ID       = "291144675891.10190505582951"
+        HECATONCHEIRES_BASE_URL              = "https://hecatoncheires-${data.google_project.this.number}.${local.region}.run.app"
+        HECATONCHEIRES_CONFIG                = "/app/config.toml"
+      }
+      secrets = local.hecatoncheires_secrets
     }
   }
 }

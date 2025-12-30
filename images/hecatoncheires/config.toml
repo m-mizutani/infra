@@ -1,0 +1,2 @@
+# Hecatoncheires Configuration
+# This file will be copied to the Docker image and mounted at /app/config.toml

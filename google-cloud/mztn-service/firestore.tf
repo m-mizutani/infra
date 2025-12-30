@@ -12,6 +12,20 @@ resource "google_firestore_database" "warren_database" {
   }
 }
 
+# Firestore database for Hecatoncheires
+
+resource "google_firestore_database" "hecatoncheires_database" {
+  project     = local.project_id
+  name        = "hecatoncheires-v0"
+  location_id = local.region
+  type        = "FIRESTORE_NATIVE"
+
+  # Prevent destruction
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
 locals {
   # Collections that need embedding indexes
   embedding_collections = ["alerts", "tickets", "lists"]

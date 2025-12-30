@@ -26,4 +26,27 @@ resource "google_project_iam_member" "warren_monitoring_writer" {
   project = local.project_id
   role    = "roles/monitoring.metricWriter"
   member  = "serviceAccount:${google_service_account.warren_runner.email}"
+}
+
+# IAM permissions for Hecatoncheires service account
+
+# Firestore access
+resource "google_project_iam_member" "hecatoncheires_firestore_user" {
+  project = local.project_id
+  role    = "roles/datastore.user"
+  member  = "serviceAccount:${google_service_account.hecatoncheires_runner.email}"
+}
+
+# Cloud Logging access
+resource "google_project_iam_member" "hecatoncheires_logging_writer" {
+  project = local.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.hecatoncheires_runner.email}"
+}
+
+# Cloud Monitoring access
+resource "google_project_iam_member" "hecatoncheires_monitoring_writer" {
+  project = local.project_id
+  role    = "roles/monitoring.metricWriter"
+  member  = "serviceAccount:${google_service_account.hecatoncheires_runner.email}"
 } 
