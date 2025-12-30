@@ -52,7 +52,7 @@ locals {
   backstream_hecatoncheires_image_uri = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream-hecatoncheires:${local.backstream_hecatoncheires_image_tag}"
 
   # Hecatoncheires configuration
-  hecatoncheires_image_tag = "d30b6731c62be5f8f228797be534caa6f699b353"
+  hecatoncheires_image_tag = ""
   hecatoncheires_image_uri = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/hecatoncheires:${local.hecatoncheires_image_tag}"
 
   # Cloud Run services configuration
