@@ -48,12 +48,12 @@ locals {
   backstream_shepherd_image_uri = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream-shepherd:latest"
 
   # Backstream-hecatoncheires configuration
-  backstream_hecatoncheires_image_sha256 = ""
-  backstream_hecatoncheires_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream-hecatoncheires@${local.backstream_hecatoncheires_image_sha256}"
+  backstream_hecatoncheires_image_tag = "5b03dc7bb49b3b3af2459a1157775a542f14278f"
+  backstream_hecatoncheires_image_uri = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream-hecatoncheires:${local.backstream_hecatoncheires_image_tag}"
 
   # Hecatoncheires configuration
-  hecatoncheires_image_sha256 = ""
-  hecatoncheires_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/hecatoncheires@${local.hecatoncheires_image_sha256}"
+  hecatoncheires_image_tag = "d30b6731c62be5f8f228797be534caa6f699b353"
+  hecatoncheires_image_uri = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/hecatoncheires:${local.hecatoncheires_image_tag}"
 
   # Cloud Run services configuration
   cloud_run_services = {
@@ -150,7 +150,7 @@ locals {
     }
 
     backstream-hecatoncheires = {
-      enabled         = local.backstream_hecatoncheires_image_sha256 != ""
+      enabled         = local.backstream_hecatoncheires_image_tag != ""
       public_access   = true
       image_uri       = local.backstream_hecatoncheires_image_uri
       service_account = google_service_account.backstream_hecatoncheires_runner.email
@@ -163,7 +163,7 @@ locals {
     }
 
     hecatoncheires = {
-      enabled         = local.hecatoncheires_image_sha256 != ""
+      enabled         = local.hecatoncheires_image_tag != ""
       public_access   = true
       image_uri       = local.hecatoncheires_image_uri
       service_account = google_service_account.hecatoncheires_runner.email
