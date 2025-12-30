@@ -1,2 +1,115 @@
-# Hecatoncheires Configuration
-# This file will be copied to the Docker image and mounted at /app/config.toml
+# Hecatoncheires Configuration Example
+# This file shows example configuration for the risk management system
+
+# Category definitions
+# Categories are used to classify risks
+[[category]]
+id = "data-breach"
+name = "データ漏洩"
+description = "個人情報や機密情報の漏洩リスク"
+
+[[category]]
+id = "system-failure"
+name = "システム障害"
+description = "システムやサービスの停止・障害リスク"
+
+[[category]]
+id = "compliance"
+name = "コンプライアンス"
+description = "法規制や社内規定の違反リスク"
+
+[[category]]
+id = "supply-chain"
+name = "サプライチェーン"
+description = "外部ベンダーや第三者サービスに関するリスク"
+
+[[category]]
+id = "insider-threat"
+name = "内部脅威"
+description = "従業員や関係者による意図的・非意図的な脅威"
+
+# Likelihood levels (score: 1-5, higher is more likely)
+# 発生確率レベル（スコア: 1-5、数値が大きいほど発生確率が高い）
+[[likelihood]]
+id = "very-low"
+name = "極めて低い"
+description = "発生する可能性が極めて低い（年に1回未満）"
+score = 1
+
+[[likelihood]]
+id = "low"
+name = "低い"
+description = "発生する可能性が低い（年に数回程度）"
+score = 2
+
+[[likelihood]]
+id = "medium"
+name = "中程度"
+description = "発生する可能性が中程度（月に1回程度）"
+score = 3
+
+[[likelihood]]
+id = "high"
+name = "高い"
+description = "発生する可能性が高い（週に1回程度）"
+score = 4
+
+[[likelihood]]
+id = "very-high"
+name = "極めて高い"
+description = "発生する可能性が極めて高い（ほぼ毎日）"
+score = 5
+
+# Impact levels (score: 1-5, higher is more severe)
+# 影響度レベル（スコア: 1-5、数値が大きいほど影響が大きい）
+[[impact]]
+id = "negligible"
+name = "軽微"
+description = "事業への影響がほとんどない"
+score = 1
+
+[[impact]]
+id = "minor"
+name = "小規模"
+description = "限定的な範囲で影響があるが、事業継続に問題なし"
+score = 2
+
+[[impact]]
+id = "moderate"
+name = "中規模"
+description = "一部の事業に影響があり、対応が必要"
+score = 3
+
+[[impact]]
+id = "major"
+name = "大規模"
+description = "重大な影響があり、早急な対応が必要"
+score = 4
+
+[[impact]]
+id = "critical"
+name = "致命的"
+description = "事業継続に深刻な影響があり、最優先で対応が必要"
+score = 5
+
+# Team definitions
+# チームは対応責任を持つ組織を定義します
+[[team]]
+id = "security-team"
+name = "セキュリティチーム"
+
+[[team]]
+id = "infrastructure-team"
+name = "インフラチーム"
+
+[[team]]
+id = "development-team"
+name = "開発チーム"
+
+[[team]]
+id = "compliance-team"
+name = "コンプライアンスチーム"
+
+[[team]]
+id = "business-team"
+name = "ビジネスチーム"
