@@ -52,8 +52,8 @@ locals {
   backstream_hecatoncheires_image_uri = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream-hecatoncheires:${local.backstream_hecatoncheires_image_tag}"
 
   # Hecatoncheires configuration
-  hecatoncheires_image_tag = ""
-  hecatoncheires_image_uri = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/hecatoncheires:${local.hecatoncheires_image_tag}"
+  hecatoncheires_image_sha256 = "sha256:c8035dd77b226c29aa3ec76051e6bc02d2fa759dc61ec50c227bd161ce249bc1"
+  hecatoncheires_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/hecatoncheires@${local.hecatoncheires_image_sha256}"
 
   # Cloud Run services configuration
   cloud_run_services = {
@@ -163,7 +163,7 @@ locals {
     }
 
     hecatoncheires = {
-      enabled         = local.hecatoncheires_image_tag != ""
+      enabled         = local.hecatoncheires_image_sha256 != ""
       public_access   = true
       image_uri       = local.hecatoncheires_image_uri
       service_account = google_service_account.hecatoncheires_runner.email
