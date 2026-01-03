@@ -51,6 +51,10 @@ locals {
   backstream_hecatoncheires_image_tag = "5b03dc7bb49b3b3af2459a1157775a542f14278f"
   backstream_hecatoncheires_image_uri = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream-hecatoncheires:${local.backstream_hecatoncheires_image_tag}"
 
+  # Backstream-octovy configuration
+  backstream_octovy_image_sha256 = ""
+  backstream_octovy_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream-octovy@${local.backstream_octovy_image_sha256}"
+
   # Hecatoncheires configuration
   hecatoncheires_image_sha256 = "sha256:c8035dd77b226c29aa3ec76051e6bc02d2fa759dc61ec50c227bd161ce249bc1"
   hecatoncheires_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/hecatoncheires@${local.hecatoncheires_image_sha256}"
@@ -154,6 +158,19 @@ locals {
       public_access   = true
       image_uri       = local.backstream_hecatoncheires_image_uri
       service_account = google_service_account.backstream_hecatoncheires_runner.email
+      cpu             = "1000m"
+      memory          = "128Mi"
+      max_instances   = 1
+      timeout         = "900s" # 15 minutes
+      env_vars        = {}
+      secrets         = []
+    }
+
+    backstream-octovy = {
+      enabled         = local.backstream_octovy_image_sha256 != ""
+      public_access   = true
+      image_uri       = local.backstream_octovy_image_uri
+      service_account = google_service_account.backstream_octovy_runner.email
       cpu             = "1000m"
       memory          = "128Mi"
       max_instances   = 1

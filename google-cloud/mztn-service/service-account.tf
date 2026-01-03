@@ -54,6 +54,14 @@ resource "google_service_account" "backstream_hecatoncheires_runner" {
   description  = "Service Account for Backstream-hecatoncheires Cloud Run service"
 }
 
+# Service Account for Backstream-octovy Cloud Run service
+
+resource "google_service_account" "backstream_octovy_runner" {
+  account_id   = "backstream-octovy-runner"
+  display_name = "Backstream-octovy Runner Service Account"
+  description  = "Service Account for Backstream-octovy Cloud Run service"
+}
+
 # Service Account for Hecatoncheires Cloud Run service
 
 resource "google_service_account" "hecatoncheires_runner" {

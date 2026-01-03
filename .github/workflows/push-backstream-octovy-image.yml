@@ -1,0 +1,22 @@
+name: push-backstream-octovy-image
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'images/backstream-octovy/**'
+      - '.github/workflows/push-backstream-octovy-image.yml'
+      - '.github/workflows/deploy-cloud-run.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-cloud-run.yml
+    with:
+      service_name: backstream-octovy
+      image_path: images/backstream-octovy
+      project_id: mztn-service
+    secrets: inherit

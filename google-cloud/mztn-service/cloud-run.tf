@@ -71,6 +71,7 @@ resource "google_cloud_run_v2_service" "services" {
     google_service_account.backstream_warren_runner,
     google_service_account.backstream_shepherd_runner,
     google_service_account.backstream_hecatoncheires_runner,
+    google_service_account.backstream_octovy_runner,
     google_secret_manager_secret.warren_secrets,
     google_secret_manager_secret.hecatoncheires_secrets,
     google_firestore_database.warren_database,
