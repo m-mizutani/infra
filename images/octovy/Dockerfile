@@ -1,6 +1,6 @@
 FROM ghcr.io/aquasecurity/trivy:latest AS trivy
 
-FROM ghcr.io/secmon-lab/octovy:v0.5.0
+FROM ghcr.io/secmon-lab/octovy:30757aa5b120aceb3a9b7ee470d0dc93bed363d5
 
 COPY --from=trivy /usr/local/bin/trivy /usr/local/bin/trivy
 
