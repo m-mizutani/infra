@@ -1,0 +1,22 @@
+name: push-octovy-image
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'images/octovy/**'
+      - '.github/workflows/push-octovy-image.yml'
+      - '.github/workflows/deploy-cloud-run.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-cloud-run.yml
+    with:
+      service_name: octovy
+      image_path: images/octovy
+      project_id: mztn-service
+    secrets: inherit

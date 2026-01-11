@@ -47,7 +47,13 @@ resource "google_cloud_run_v2_service" "services" {
           name = env.value
           value_source {
             secret_key_ref {
-              secret  = can(google_secret_manager_secret.warren_secrets[env.value]) ? google_secret_manager_secret.warren_secrets[env.value].secret_id : google_secret_manager_secret.hecatoncheires_secrets[env.value].secret_id
+              secret = (
+                can(google_secret_manager_secret.warren_secrets[env.value])
+                ? google_secret_manager_secret.warren_secrets[env.value].secret_id
+                : can(google_secret_manager_secret.hecatoncheires_secrets[env.value])
+                ? google_secret_manager_secret.hecatoncheires_secrets[env.value].secret_id
+                : google_secret_manager_secret.octovy_secrets[env.value].secret_id
+              )
               version = "latest"
             }
           }
@@ -72,11 +78,14 @@ resource "google_cloud_run_v2_service" "services" {
     google_service_account.backstream_shepherd_runner,
     google_service_account.backstream_hecatoncheires_runner,
     google_service_account.backstream_octovy_runner,
+    google_service_account.octovy_runner,
     google_secret_manager_secret.warren_secrets,
     google_secret_manager_secret.hecatoncheires_secrets,
+    google_secret_manager_secret.octovy_secrets,
     google_firestore_database.warren_database,
     google_firestore_database.hecatoncheires_database,
     google_storage_bucket.warren_bucket,
+    google_bigquery_dataset.octovy,
   ]
 }
 
