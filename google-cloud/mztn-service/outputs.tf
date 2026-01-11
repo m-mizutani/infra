@@ -38,4 +38,4 @@ output "backstream_image_uri" {
 output "cloud_run_service_urls" {
   description = "URLs of deployed Cloud Run services"
   value       = { for k, v in google_cloud_run_v2_service.services : k => v.uri }
-} 
+}
