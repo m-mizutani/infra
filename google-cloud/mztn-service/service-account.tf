@@ -68,4 +68,12 @@ resource "google_service_account" "hecatoncheires_runner" {
   account_id   = "hecatoncheires-runner"
   display_name = "Hecatoncheires Runner Service Account"
   description  = "Service Account for Hecatoncheires Cloud Run service"
+}
+
+# Service Account for Octovy Cloud Run service
+
+resource "google_service_account" "octovy_runner" {
+  account_id   = "octovy-runner"
+  display_name = "Octovy Runner Service Account"
+  description  = "Service Account for Octovy Cloud Run service"
 } 

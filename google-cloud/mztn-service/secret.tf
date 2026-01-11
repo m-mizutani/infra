@@ -48,4 +48,30 @@ resource "google_secret_manager_secret_iam_member" "hecatoncheires_secret_access
   secret_id = google_secret_manager_secret.hecatoncheires_secrets[each.key].secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.hecatoncheires_runner.email}"
+}
+
+# Secrets for Octovy
+
+# Create secrets
+resource "google_secret_manager_secret" "octovy_secrets" {
+  for_each = toset(local.octovy_secrets)
+
+  secret_id = each.value
+
+  replication {
+    auto {}
+  }
+
+  labels = {
+    service = "octovy"
+  }
+}
+
+# Grant Octovy service account access to secrets
+resource "google_secret_manager_secret_iam_member" "octovy_secret_access" {
+  for_each = toset(local.octovy_secrets)
+
+  secret_id = google_secret_manager_secret.octovy_secrets[each.key].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.octovy_runner.email}"
 } 

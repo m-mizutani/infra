@@ -28,6 +28,12 @@ locals {
     "HECATONCHEIRES_SLACK_SIGNING_SECRET",
   ]
 
+  # Octovy secrets
+  octovy_secrets = [
+    "OCTOVY_GITHUB_APP_PRIVATE_KEY",
+    "OCTOVY_GITHUB_APP_SECRET",
+  ]
+
   # Backstream configuration
   backstream_image_sha256 = "sha256:f6de5a1b792b54349941608904d2a2be46f7c3c4c90ca14c836f904b08e41ff4"
   backstream_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/backstream@${local.backstream_image_sha256}"
@@ -58,6 +64,10 @@ locals {
   # Hecatoncheires configuration
   hecatoncheires_image_sha256 = "sha256:c8035dd77b226c29aa3ec76051e6bc02d2fa759dc61ec50c227bd161ce249bc1"
   hecatoncheires_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/hecatoncheires@${local.hecatoncheires_image_sha256}"
+
+  # Octovy configuration
+  octovy_image_sha256 = "sha256:526eb36cff4797516009a88174f23ce6b533a65279016663965349e827f55882"
+  octovy_image_uri    = "${local.region}-docker.pkg.dev/${local.project_id}/container-images/octovy@${local.octovy_image_sha256}"
 
   # Cloud Run services configuration
   cloud_run_services = {
@@ -196,6 +206,25 @@ locals {
         HECATONCHEIRES_CONFIG                = "/app/config.toml"
       }
       secrets = local.hecatoncheires_secrets
+    }
+
+    octovy = {
+      enabled         = true
+      public_access   = true
+      image_uri       = local.octovy_image_uri
+      service_account = google_service_account.octovy_runner.email
+      cpu             = "1000m"
+      memory          = "512Mi"
+      max_instances   = 1
+      timeout         = "300s"
+      env_vars = {
+        OCTOVY_ADDR                = "0.0.0.0:8080"
+        OCTOVY_GITHUB_APP_ID       = "109024"
+        OCTOVY_BIGQUERY_PROJECT_ID = local.project_id
+        OCTOVY_BIGQUERY_DATASET_ID = google_bigquery_dataset.octovy.dataset_id
+        OCTOVY_LOG_FORMAT          = "json"
+      }
+      secrets = local.octovy_secrets
     }
   }
 }
