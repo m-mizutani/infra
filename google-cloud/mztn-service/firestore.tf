@@ -26,6 +26,20 @@ resource "google_firestore_database" "hecatoncheires_database" {
   }
 }
 
+# Firestore database for Octovy
+
+resource "google_firestore_database" "octovy_database" {
+  project     = local.project_id
+  name        = "octovy-v1"
+  location_id = local.region
+  type        = "FIRESTORE_NATIVE"
+
+  # Prevent destruction
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
 locals {
   # Collections that need embedding indexes
   embedding_collections = ["alerts", "tickets", "lists"]

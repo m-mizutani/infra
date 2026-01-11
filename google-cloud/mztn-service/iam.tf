@@ -53,6 +53,13 @@ resource "google_project_iam_member" "hecatoncheires_monitoring_writer" {
 
 # IAM permissions for Octovy service account
 
+# Firestore access
+resource "google_project_iam_member" "octovy_firestore_user" {
+  project = local.project_id
+  role    = "roles/datastore.user"
+  member  = "serviceAccount:${google_service_account.octovy_runner.email}"
+}
+
 # Cloud Logging access
 resource "google_project_iam_member" "octovy_logging_writer" {
   project = local.project_id
