@@ -214,7 +214,7 @@ locals {
       image_uri       = local.octovy_image_uri
       service_account = google_service_account.octovy_runner.email
       cpu             = "1000m"
-      memory          = "512Mi"
+      memory          = "2024Mi"
       max_instances   = 1
       timeout         = "300s"
       env_vars = {
