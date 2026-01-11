@@ -218,11 +218,13 @@ locals {
       max_instances   = 1
       timeout         = "300s"
       env_vars = {
-        OCTOVY_ADDR                = "0.0.0.0:8080"
-        OCTOVY_GITHUB_APP_ID       = "109024"
-        OCTOVY_BIGQUERY_PROJECT_ID = local.project_id
-        OCTOVY_BIGQUERY_DATASET_ID = google_bigquery_dataset.octovy.dataset_id
-        OCTOVY_LOG_FORMAT          = "json"
+        OCTOVY_ADDR                  = "0.0.0.0:8080"
+        OCTOVY_GITHUB_APP_ID         = "109024"
+        OCTOVY_BIGQUERY_PROJECT_ID   = local.project_id
+        OCTOVY_BIGQUERY_DATASET_ID   = google_bigquery_dataset.octovy.dataset_id
+        OCTOVY_LOG_FORMAT            = "json"
+        OCTOVY_FIRESTORE_PROJECT_ID  = local.project_id
+        OCTOVY_FIRESTORE_DATABASE_ID = google_firestore_database.octovy_database.name
       }
       secrets = local.octovy_secrets
     }
