@@ -10,10 +10,5 @@ resource "google_logging_project_sink" "audit_logs_to_bigquery" {
   unique_writer_identity = true
 }
 
-# Grant the log sink's service account permission to write to the BigQuery dataset
-resource "google_bigquery_dataset_iam_member" "audit_log_sink_writer" {
-  project    = "mztn-audit"
-  dataset_id = "google_cloud_audit"
-  role       = "roles/bigquery.dataEditor"
-  member     = google_logging_project_sink.audit_logs_to_bigquery.writer_identity
-}
+# NOTE: After applying, grant BigQuery dataEditor permission to the sink's writer identity
+# gcloud projects add-iam-policy-binding mztn-audit --member="serviceAccount:service-507354148656@gcp-sa-logging.iam.gserviceaccount.com" --role="roles/bigquery.dataEditor"
