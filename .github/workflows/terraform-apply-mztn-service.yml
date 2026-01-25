@@ -17,4 +17,5 @@ jobs:
     with:
       working_directory: google-cloud/mztn-service
       project_id: mztn-service
+      project_number: "507354148656"
     secrets: inherit

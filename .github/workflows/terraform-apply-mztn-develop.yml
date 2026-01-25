@@ -1,0 +1,21 @@
+name: terraform-apply-mztn-develop
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'google-cloud/mztn-develop/**'
+      - '.github/workflows/terraform-apply-mztn-develop.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  terraform:
+    uses: ./.github/workflows/terraform-apply.yml
+    with:
+      working_directory: google-cloud/mztn-develop
+      project_id: mztn-develop
+      project_number: "597637332213"
+    secrets: inherit

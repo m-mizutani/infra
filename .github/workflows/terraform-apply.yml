@@ -11,6 +11,10 @@ on:
         required: true
         type: string
         description: 'GCP Project ID for service account'
+      project_number:
+        required: true
+        type: string
+        description: 'GCP Project Number for Workload Identity'
       tf_version:
         required: false
         type: string
@@ -47,7 +51,7 @@ jobs:
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v1
       with:
-        workload_identity_provider: 'projects/507354148656/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
+        workload_identity_provider: 'projects/${{ inputs.project_number }}/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
         service_account: 'github-actions@${{ inputs.project_id }}.iam.gserviceaccount.com'
 
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
