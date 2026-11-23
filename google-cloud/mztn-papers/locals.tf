@@ -18,11 +18,4 @@ locals {
 
   # Firestore Enterprise database used by papers
   firestore_database_id = "papers"
-
-  # Secrets read by the papers service (values are set by hand, see README.md)
-  papers_secrets = [
-    "PAPERS_GOOGLE_CLIENT_ID",
-    "PAPERS_GOOGLE_CLIENT_SECRET",
-    "PAPERS_ALLOWED_EMAILS",
-  ]
 }

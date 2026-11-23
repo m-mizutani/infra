@@ -1,6 +1,5 @@
 # Workspace definition of papers (one TOML file per workspace).
-# No [authz]: every signed-in user may use this workspace. Sign-in itself is
-# limited to PAPERS_ALLOWED_EMAILS (Secret Manager).
+# No [authz]: every signed-in user may use this workspace.
 [workspace]
 id = "main"
 name = "Papers"

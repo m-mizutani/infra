@@ -9,6 +9,6 @@ output "project_number" {
 }
 
 output "papers_url" {
-  description = "URL of the papers service (Google OAuth redirect: <url>/api/auth/callback)"
+  description = "URL of the papers service"
   value       = "https://papers-${data.google_project.this.number}.${local.region}.run.app"
 }

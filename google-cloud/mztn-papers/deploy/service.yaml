@@ -60,22 +60,6 @@ spec:
               value: /config/global.toml
             - name: PAPERS_SENTRY_RELEASE
               value: PAPERS_VERSION
-            - name: PAPERS_GOOGLE_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: PAPERS_GOOGLE_CLIENT_ID
-                  key: latest
-            - name: PAPERS_GOOGLE_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: PAPERS_GOOGLE_CLIENT_SECRET
-                  key: latest
-            # Comma-separated email addresses allowed to sign in
-            - name: PAPERS_ALLOWED_EMAILS
-              valueFrom:
-                secretKeyRef:
-                  name: PAPERS_ALLOWED_EMAILS
-                  key: latest
           volumeMounts:
             - name: config
               mountPath: /config

@@ -37,7 +37,7 @@ Roll back with `gcloud deploy targets rollback papers-prod --delivery-pipeline=p
 
 | Path | Contents |
 |---|---|
-| `*.tf` | Project resources: APIs, Artifact Registry, Pub/Sub, Firestore Enterprise, buckets, secrets, service accounts, Cloud Build triggers, Cloud Deploy |
+| `*.tf` | Project resources: APIs, Artifact Registry, Pub/Sub, Firestore Enterprise, buckets, service accounts, Cloud Build triggers, Cloud Deploy |
 | `deploy/service.yaml` | The Cloud Run service (placeholders `PAPERS_*` are filled by `cloudbuild.yaml`) |
 | `deploy/skaffold.yaml` | Render and deploy config, and the `firestore-setup` custom action |
 | `deploy/cloudbuild.yaml` | Creates a release (run by papers-deploy and papers-config) |
@@ -75,20 +75,10 @@ Roll back with `gcloud deploy targets rollback papers-prod --delivery-pipeline=p
    terraform apply
    ```
 
-4. Set the secret values (`PAPERS_ALLOWED_EMAILS` is a comma-separated list):
-
-   ```bash
-   echo -n "CLIENT_ID" | gcloud secrets versions add PAPERS_GOOGLE_CLIENT_ID --data-file=- --project=mztn-papers
-   echo -n "CLIENT_SECRET" | gcloud secrets versions add PAPERS_GOOGLE_CLIENT_SECRET --data-file=- --project=mztn-papers
-   echo -n "you@example.com" | gcloud secrets versions add PAPERS_ALLOWED_EMAILS --data-file=- --project=mztn-papers
-   ```
-
-   The OAuth client's redirect URI is `<papers_url output>/api/auth/callback`.
-
-5. Commit `.terraform.lock.hcl`. From then on, Terraform is applied only from
+4. Commit `.terraform.lock.hcl`. From then on, Terraform is applied only from
    main: pushes to main that change the Terraform files run
    `terraform-apply-mztn-papers.yml` (Workload Identity Federation as
    `github-actions@mztn-papers.iam.gserviceaccount.com`).
 
-6. Push a release tag on m-mizutani/papers (or run the papers-build trigger
+5. Push a release tag on m-mizutani/papers (or run the papers-build trigger
    by hand on an existing tag) for the first deploy.
