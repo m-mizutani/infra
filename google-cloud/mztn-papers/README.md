@@ -85,9 +85,10 @@ Roll back with `gcloud deploy targets rollback papers-prod --delivery-pipeline=p
 
    The OAuth client's redirect URI is `<papers_url output>/api/auth/callback`.
 
-5. Set the repository variable `MZTN_PAPERS_PROJECT_NUMBER` to the
-   `project_number` output. From then on, pushes to main that change the
-   Terraform files are applied by `terraform-apply-mztn-papers.yml`.
+5. Commit `.terraform.lock.hcl`. From then on, Terraform is applied only from
+   main: pushes to main that change the Terraform files run
+   `terraform-apply-mztn-papers.yml` (Workload Identity Federation as
+   `github-actions@mztn-papers.iam.gserviceaccount.com`).
 
 6. Push a release tag on m-mizutani/papers (or run the papers-build trigger
    by hand on an existing tag) for the first deploy.

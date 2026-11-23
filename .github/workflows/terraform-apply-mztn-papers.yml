@@ -15,13 +15,10 @@ permissions:
 
 jobs:
   terraform:
-    # Set the MZTN_PAPERS_PROJECT_NUMBER repository variable after the
-    # first (local) apply; see google-cloud/mztn-papers/README.md
-    if: ${{ vars.MZTN_PAPERS_PROJECT_NUMBER != '' }}
     uses: ./.github/workflows/terraform-apply.yml
     with:
       working_directory: google-cloud/mztn-papers
       project_id: mztn-papers
-      project_number: ${{ vars.MZTN_PAPERS_PROJECT_NUMBER }}
+      project_number: '240228871785'
       tf_version: '1.13.4'
     secrets: inherit

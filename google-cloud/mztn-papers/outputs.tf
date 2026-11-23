@@ -4,7 +4,7 @@ output "workload_identity_provider" {
 }
 
 output "project_number" {
-  description = "Project number (set it as the MZTN_PAPERS_PROJECT_NUMBER repository variable)"
+  description = "Project number (used by terraform-apply-mztn-papers.yml)"
   value       = data.google_project.this.number
 }
 
