@@ -24,7 +24,10 @@ steps:
         if [ -n "${_TAG}" ]; then
           # Pin the release to the digest of the pushed tag
           image="${_DIGEST}"
-          version="$${_TAG##*:}"
+          # Substitutions are not shell variables: copy the tag into one
+          # before cutting the version off it (set -u fails otherwise)
+          tag="${_TAG}"
+          version="$${tag##*:}"
         else
           image=$(gcloud run services describe papers --region="${_REGION}" \
             --format='value(spec.template.spec.containers[0].image)' 2>/dev/null || true)
