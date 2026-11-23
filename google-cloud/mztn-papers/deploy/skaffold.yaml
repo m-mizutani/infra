@@ -1,0 +1,24 @@
+# Render and deploy configuration of the papers Cloud Deploy pipeline.
+# cloudbuild.yaml fills in PAPERS_IMAGE before creating the release.
+apiVersion: skaffold/v4beta7
+kind: Config
+metadata:
+  name: papers
+manifests:
+  rawYaml:
+    - service.yaml
+deploy:
+  cloudrun: {}
+customActions:
+  # Predeploy hook (cloud-deploy.tf): create the Firestore indexes and TTL
+  # policies the new version needs before it takes traffic
+  - name: firestore-setup
+    containers:
+      - name: firestore-setup
+        image: PAPERS_IMAGE
+        command: ["/papers"]
+        args:
+          - firestore
+          - setup
+          - --firestore-project-id=mztn-papers
+          - --firestore-database-id=papers

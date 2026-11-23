@@ -6,6 +6,7 @@
 
 - `google-cloud/mztn-service/` - メインのプロダクション環境
 - `google-cloud/mztn-seccamp2025/` - セキュリティキャンプ用環境
+- `google-cloud/mztn-papers/` - papers 専用環境（papers のリリースタグから Cloud Build → Artifact Registry → Pub/Sub → Cloud Deploy で自動デプロイ。詳細は同ディレクトリの README.md）
 - `images/` - 各サービスの Dockerfile
 - `.github/workflows/` - CI/CD ワークフロー
 

@@ -1,0 +1,27 @@
+name: terraform-apply-mztn-papers
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'google-cloud/mztn-papers/**'
+      - '!google-cloud/mztn-papers/deploy/**'
+      - '.github/workflows/terraform-apply-mztn-papers.yml'
+      - '.github/workflows/terraform-apply.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  terraform:
+    # Set the MZTN_PAPERS_PROJECT_NUMBER repository variable after the
+    # first (local) apply; see google-cloud/mztn-papers/README.md
+    if: ${{ vars.MZTN_PAPERS_PROJECT_NUMBER != '' }}
+    uses: ./.github/workflows/terraform-apply.yml
+    with:
+      working_directory: google-cloud/mztn-papers
+      project_id: mztn-papers
+      project_number: ${{ vars.MZTN_PAPERS_PROJECT_NUMBER }}
+      tf_version: '1.13.4'
+    secrets: inherit

@@ -1,0 +1,4 @@
+# Display groups of the sidebar (--global-config). No effect on access.
+[[group]]
+name = "Workspaces"
+workspaces = ["main"]

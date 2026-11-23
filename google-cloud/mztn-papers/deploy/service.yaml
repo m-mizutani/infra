@@ -1,0 +1,96 @@
+# Cloud Run service of papers, deployed by Cloud Deploy.
+# cloudbuild.yaml fills in PAPERS_IMAGE, PAPERS_VERSION, PAPERS_RELEASE and
+# PAPERS_BASE_URL before creating the release.
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: papers
+  annotations:
+    run.googleapis.com/ingress: all
+    # Public service: sign-in is enforced by papers itself
+    run.googleapis.com/invoker-iam-disabled: "true"
+spec:
+  template:
+    metadata:
+      labels:
+        papers-version: PAPERS_VERSION
+      annotations:
+        run.googleapis.com/execution-environment: gen2
+        run.googleapis.com/cpu-throttling: "false"
+        run.googleapis.com/sessionAffinity: "true"
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "4"
+    spec:
+      serviceAccountName: papers-runner@mztn-papers.iam.gserviceaccount.com
+      # WebSocket connections live up to 60 minutes
+      timeoutSeconds: 3600
+      containerConcurrency: 80
+      containers:
+        - image: PAPERS_IMAGE
+          args: ["serve"]
+          ports:
+            - name: http1
+              containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          env:
+            - name: PAPERS_ADDR
+              value: ":8080"
+            - name: PAPERS_BASE_URL
+              value: PAPERS_BASE_URL
+            - name: PAPERS_LOG_FORMAT
+              value: json
+            - name: PAPERS_REPOSITORY_BACKEND
+              value: firestore
+            - name: PAPERS_FIRESTORE_PROJECT_ID
+              value: mztn-papers
+            - name: PAPERS_FIRESTORE_DATABASE_ID
+              value: papers
+            - name: PAPERS_FIRESTORE_SEARCH_LANGUAGE
+              value: ja
+            - name: PAPERS_ATTACHMENT_BACKEND
+              value: gcs
+            - name: PAPERS_ATTACHMENT_BUCKET
+              value: mztn-papers-attachments
+            - name: PAPERS_CONFIG
+              value: /config/workspaces
+            - name: PAPERS_GLOBAL_CONFIG
+              value: /config/global.toml
+            - name: PAPERS_SENTRY_RELEASE
+              value: PAPERS_VERSION
+            - name: PAPERS_GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: PAPERS_GOOGLE_CLIENT_ID
+                  key: latest
+            - name: PAPERS_GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: PAPERS_GOOGLE_CLIENT_SECRET
+                  key: latest
+            # Comma-separated email addresses allowed to sign in
+            - name: PAPERS_ALLOWED_EMAILS
+              valueFrom:
+                secretKeyRef:
+                  name: PAPERS_ALLOWED_EMAILS
+                  key: latest
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+          startupProbe:
+            tcpSocket:
+              port: 8080
+            failureThreshold: 6
+            periodSeconds: 5
+      volumes:
+        # deploy/config of this release, uploaded by cloudbuild.yaml
+        - name: config
+          csi:
+            driver: gcsfuse.run.googleapis.com
+            readOnly: true
+            volumeAttributes:
+              bucketName: mztn-papers-config
+              mountOptions: "implicit-dirs,only-dir=releases/PAPERS_RELEASE"
