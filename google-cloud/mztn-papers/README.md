@@ -57,10 +57,17 @@ Roll back with `gcloud deploy targets rollback papers-prod --delivery-pipeline=p
 
    Commit the `.terraform.lock.hcl` that `terraform init` writes.
 
-2. Create the Cloud Build GitHub connection in the console: Cloud Build >
+2. Grant the Cloud Build service agent Secret Manager access (also in
+   `iam.tf`; needed before the connection can be created), then create the
+   Cloud Build GitHub connection in the console: Cloud Build >
    Repositories (2nd gen) > Create host connection, region `asia-northeast1`,
    name `github`. Install the Cloud Build GitHub App on `m-mizutani/papers`
    and `m-mizutani/infra`.
+
+   ```bash
+   gcloud projects add-iam-policy-binding mztn-papers --member="serviceAccount:service-$(gcloud projects describe mztn-papers --format='value(projectNumber)')@gcp-sa-cloudbuild.iam.gserviceaccount.com" --role=roles/secretmanager.admin
+   gcloud builds connections create github github --project=mztn-papers --region=asia-northeast1
+   ```
 
 3. Apply:
 

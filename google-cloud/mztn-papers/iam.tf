@@ -80,6 +80,16 @@ resource "google_service_account_iam_member" "pubsub_token_creator" {
   depends_on = [google_project_service.required_apis]
 }
 
+# The Cloud Build service agent stores the GitHub token of the 2nd gen
+# connection in Secret Manager; it needs this before the connection is created
+resource "google_project_iam_member" "cloudbuild_agent_secret_admin" {
+  project = local.project_id
+  role    = "roles/secretmanager.admin"
+  member  = "serviceAccount:service-${data.google_project.this.number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"
+
+  depends_on = [google_project_service.required_apis]
+}
+
 # --- deployer (Cloud Deploy execution) ------------------------------------
 
 resource "google_project_iam_member" "deployer" {
