@@ -45,14 +45,14 @@ Roll back with `gcloud deploy targets rollback papers-prod --delivery-pipeline=p
 
 ## Bootstrap (once)
 
-1. Create the state bucket and apply once from a local machine (the GitHub
-   Actions service account is created by this configuration):
+1. Create the state bucket by hand (it is not managed by Terraform) and
+   initialize from a local machine (the GitHub Actions service account is
+   created by this configuration):
 
    ```bash
-   cd google-cloud/mztn-papers
    gcloud storage buckets create gs://mztn-papers-terraform --project=mztn-papers --location=asia-northeast1 --uniform-bucket-level-access
+   cd google-cloud/mztn-papers
    terraform init
-   terraform import google_storage_bucket.terraform_state mztn-papers-terraform
    ```
 
    Commit the `.terraform.lock.hcl` that `terraform init` writes.
