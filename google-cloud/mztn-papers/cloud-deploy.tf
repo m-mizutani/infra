@@ -1,5 +1,7 @@
 # Cloud Deploy: one Cloud Run target and a pipeline whose predeploy hook
-# runs `papers firestore migrate` (the custom action in deploy/skaffold.yaml).
+# runs `papers firestore migrate` and whose postdeploy hook updates the Cloud
+# Run job papers-reset to the deployed image (the custom actions in
+# deploy/skaffold.yaml).
 # The Cloud Run service itself is defined by deploy/service.yaml and owned
 # by Cloud Deploy, not by Terraform.
 
@@ -33,6 +35,9 @@ resource "google_clouddeploy_delivery_pipeline" "papers" {
           verify = false
           predeploy {
             actions = ["firestore-setup"]
+          }
+          postdeploy {
+            actions = ["reset-job"]
           }
         }
       }

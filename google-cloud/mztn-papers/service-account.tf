@@ -20,3 +20,10 @@ resource "google_service_account" "papers_deployer" {
   display_name = "Papers Deployer Service Account"
   description  = "Execution Service Account for the papers Cloud Deploy pipeline"
 }
+
+# Identity of Cloud Scheduler when it starts the daily papers-reset job
+resource "google_service_account" "papers_scheduler" {
+  account_id   = "papers-scheduler"
+  display_name = "Papers Scheduler Service Account"
+  description  = "Service Account that Cloud Scheduler uses to run the papers-reset job"
+}

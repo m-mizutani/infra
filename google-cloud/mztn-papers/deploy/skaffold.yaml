@@ -25,3 +25,27 @@ customActions:
           - migrate
           - --firestore-project-id=mztn-papers
           - --firestore-database-id=papers
+  # Postdeploy hook (cloud-deploy.tf): point the Cloud Run job papers-reset at
+  # the image just deployed (created on the first release). Cloud Scheduler
+  # (scheduler.tf) runs it once a day to delete every Firestore document.
+  - name: reset-job
+    containers:
+      - name: reset-job
+        image: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+        command: ["gcloud"]
+        args:
+          - run
+          - jobs
+          - deploy
+          - papers-reset
+          - --project=mztn-papers
+          - --region=asia-northeast1
+          - --image=PAPERS_IMAGE
+          - --service-account=papers-runner@mztn-papers.iam.gserviceaccount.com
+          - --command=/papers
+          - --args=firestore,reset,--force-dangerous-apply,--firestore-project-id=mztn-papers,--firestore-database-id=papers
+          - --tasks=1
+          - --max-retries=0
+          - --task-timeout=30m
+          - --cpu=1
+          - --memory=512Mi
