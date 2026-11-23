@@ -1,5 +1,5 @@
 # Cloud Deploy: one Cloud Run target and a pipeline whose predeploy hook
-# runs `papers firestore setup` (the custom action in deploy/skaffold.yaml).
+# runs `papers firestore migrate` (the custom action in deploy/skaffold.yaml).
 # The Cloud Run service itself is defined by deploy/service.yaml and owned
 # by Cloud Deploy, not by Terraform.
 

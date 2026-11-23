@@ -10,8 +10,11 @@ manifests:
 deploy:
   cloudrun: {}
 customActions:
-  # Predeploy hook (cloud-deploy.tf): create the Firestore indexes and TTL
-  # policies the new version needs before it takes traffic
+  # Predeploy hook (cloud-deploy.tf): `papers firestore migrate` creates the
+  # missing Firestore indexes and TTL policies the new version needs and waits
+  # until the indexes are READY, so the new version takes traffic only once
+  # they are usable. It is idempotent, so it runs on every release. The action keeps
+  # its name so the pipeline in cloud-deploy.tf does not change.
   - name: firestore-setup
     containers:
       - name: firestore-setup
@@ -19,6 +22,6 @@ customActions:
         command: ["/papers"]
         args:
           - firestore
-          - setup
+          - migrate
           - --firestore-project-id=mztn-papers
           - --firestore-database-id=papers

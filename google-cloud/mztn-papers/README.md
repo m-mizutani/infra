@@ -12,7 +12,7 @@ flowchart LR
   AR -->|"Pub/Sub topic gcr (INSERT)"| D["Cloud Build: papers-deploy<br/>deploy/cloudbuild.yaml"]
   C["m-mizutani/infra<br/>deploy/** on main"] -->|"Cloud Build: papers-config"| D
   D -->|"config to GCS, gcloud deploy releases create"| CD["Cloud Deploy: papers"]
-  CD -->|"predeploy"| FS["papers firestore setup"]
+  CD -->|"predeploy"| FS["papers firestore migrate"]
   FS --> CR["Cloud Run: papers"]
 ```
 
@@ -27,7 +27,7 @@ flowchart LR
   exists is skipped, since Pub/Sub delivers at least once.
 - **papers-config**: a change under `deploy/` on main releases the running
   image again with the new configuration.
-- **Cloud Deploy** (`cloud-deploy.tf`) runs `papers firestore setup` as a
+- **Cloud Deploy** (`cloud-deploy.tf`) runs `papers firestore migrate` as a
   predeploy hook (indexes and TTL policies), then deploys `deploy/service.yaml`.
   The Cloud Run service is owned by Cloud Deploy, not by Terraform.
 

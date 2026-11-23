@@ -98,7 +98,7 @@ resource "google_project_iam_member" "deployer" {
     "roles/logging.logWriter",
     # Cloud Run service, including the invoker IAM check setting
     "roles/run.admin",
-    # papers firestore setup: indexes and TTL policies
+    # papers firestore migrate: indexes and TTL policies
     "roles/datastore.owner",
   ])
 
