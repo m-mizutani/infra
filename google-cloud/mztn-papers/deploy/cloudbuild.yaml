@@ -1,0 +1,71 @@
+# Creates a Cloud Deploy release of papers. Run by two triggers (cloud-build.tf):
+#   papers-deploy: a release tag of the papers image was pushed to Artifact
+#                  Registry (_TAG and _DIGEST come from the Pub/Sub message)
+#   papers-config: deploy/ changed on main; the running image is released again
+substitutions:
+  _ACTION: ""
+  _TAG: ""
+  _DIGEST: ""
+  _REGION: asia-northeast1
+  _PIPELINE: papers
+  _CONFIG_BUCKET: mztn-papers-config
+  _DEPLOY_BUCKET: mztn-papers-deploy
+
+steps:
+  - id: release
+    name: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+    dir: google-cloud/mztn-papers/deploy
+    entrypoint: bash
+    args:
+      - -euo
+      - pipefail
+      - -c
+      - |
+        if [ -n "${_TAG}" ]; then
+          # Pin the release to the digest of the pushed tag
+          image="${_DIGEST}"
+          version="$${_TAG##*:}"
+        else
+          image=$(gcloud run services describe papers --region="${_REGION}" \
+            --format='value(spec.template.spec.containers[0].image)' 2>/dev/null || true)
+          version=$(gcloud run services describe papers --region="${_REGION}" \
+            --format='value(spec.template.metadata.labels.papers-version)' 2>/dev/null || true)
+          if [ -z "$${image}" ] || [ -z "$${version}" ]; then
+            echo "papers is not deployed yet; nothing to release"
+            exit 0
+          fi
+        fi
+
+        commit="${SHORT_SHA}"
+        if [ -z "$${commit}" ]; then commit="${BUILD_ID}"; commit="$${commit:0:7}"; fi
+        label=$(echo "$${version}" | tr '[:upper:].' '[:lower:]-')
+        release="$${label}-$${commit}"
+
+        # Pub/Sub delivers at least once: a release that exists is done
+        if gcloud deploy releases describe "$${release}" \
+            --delivery-pipeline="${_PIPELINE}" --region="${_REGION}" >/dev/null 2>&1; then
+          echo "release $${release} already exists"
+          exit 0
+        fi
+
+        # Configuration of this release, mounted by its Cloud Run revision.
+        # The prefix is new for every release, so a plain copy is enough.
+        gcloud storage cp --recursive config/* "gs://${_CONFIG_BUCKET}/releases/$${release}/"
+
+        base_url="https://papers-${PROJECT_NUMBER}.${_REGION}.run.app"
+        sed -i \
+          -e "s|PAPERS_IMAGE|$${image}|g" \
+          -e "s|PAPERS_VERSION|$${label}|g" \
+          -e "s|PAPERS_RELEASE|$${release}|g" \
+          -e "s|PAPERS_BASE_URL|$${base_url}|g" \
+          service.yaml skaffold.yaml
+
+        gcloud deploy releases create "$${release}" \
+          --delivery-pipeline="${_PIPELINE}" \
+          --region="${_REGION}" \
+          --source=. \
+          --skaffold-file=skaffold.yaml \
+          --gcs-source-staging-dir="gs://${_DEPLOY_BUCKET}/source"
+
+options:
+  logging: CLOUD_LOGGING_ONLY

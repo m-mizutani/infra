@@ -1,0 +1,7 @@
+# Workspace definition of papers (one TOML file per workspace).
+# No [authz]: every signed-in user may use this workspace.
+[workspace]
+id = "main"
+name = "Papers"
+description = "Notes and documents."
+color = "#2350c8"

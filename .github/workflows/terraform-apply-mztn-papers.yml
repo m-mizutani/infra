@@ -1,0 +1,24 @@
+name: terraform-apply-mztn-papers
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'google-cloud/mztn-papers/**'
+      - '!google-cloud/mztn-papers/deploy/**'
+      - '.github/workflows/terraform-apply-mztn-papers.yml'
+      - '.github/workflows/terraform-apply.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  terraform:
+    uses: ./.github/workflows/terraform-apply.yml
+    with:
+      working_directory: google-cloud/mztn-papers
+      project_id: mztn-papers
+      project_number: '240228871785'
+      tf_version: '1.13.4'
+    secrets: inherit
