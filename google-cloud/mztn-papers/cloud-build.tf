@@ -1,6 +1,8 @@
 # Cloud Build triggers of the papers release flow:
 #
-#   papers v* tag --(papers-build)--> Artifact Registry --(Pub/Sub "gcr")-->
+#   papers v* tag --(papers-build)--+
+#                                   +--> Artifact Registry --(Pub/Sub "gcr")-->
+#   papers main  --(papers-main)----+
 #   papers-deploy --> Cloud Deploy release --> predeploy: firestore migrate --> Cloud Run
 #
 # papers-config creates a release with the running image when the
@@ -66,7 +68,47 @@ resource "google_cloudbuild_trigger" "papers_build" {
   }
 }
 
-# Starts a release when a release tag of papers lands in Artifact Registry
+# Builds the image of every push to main of papers (a merged pull request)
+# and pushes it to Artifact Registry as main-<short commit SHA>
+resource "google_cloudbuild_trigger" "papers_main" {
+  name            = "papers-main"
+  location        = local.region
+  description     = "Build m-mizutani/papers main into Artifact Registry"
+  service_account = google_service_account.papers_builder.id
+
+  repository_event_config {
+    repository = google_cloudbuildv2_repository.papers.id
+    push {
+      branch = local.papers_main_branch
+    }
+  }
+
+  build {
+    step {
+      name = "gcr.io/cloud-builders/docker"
+      env  = ["DOCKER_BUILDKIT=1"]
+      args = [
+        "build",
+        "--build-arg", "BUILD_VERSION=main-$SHORT_SHA",
+        "--tag", "${local.papers_image}:main-$SHORT_SHA",
+        ".",
+      ]
+    }
+
+    # Pushing the tag publishes INSERT on the "gcr" topic
+    images = ["${local.papers_image}:main-$SHORT_SHA"]
+
+    timeout = "1800s"
+
+    options {
+      machine_type = "E2_HIGHCPU_8"
+      logging      = "CLOUD_LOGGING_ONLY"
+    }
+  }
+}
+
+# Starts a release when a release tag or a main build of papers lands in
+# Artifact Registry
 resource "google_cloudbuild_trigger" "papers_deploy" {
   name            = "papers-deploy"
   location        = local.region
@@ -96,8 +138,9 @@ resource "google_cloudbuild_trigger" "papers_deploy" {
     _DIGEST = "$(body.message.data.digest)"
   }
 
-  # Only new release tags of the papers image (not deletions, not other images)
-  filter = "_ACTION == \"INSERT\" && _TAG.matches(\"^${replace(local.papers_image, ".", "\\\\.")}:v[0-9]+\\\\.[0-9]+\\\\.[0-9]+$\")"
+  # Only new release tags and main builds of the papers image (not deletions,
+  # not other images)
+  filter = "_ACTION == \"INSERT\" && _TAG.matches(\"^${replace(local.papers_image, ".", "\\\\.")}:(v[0-9]+\\\\.[0-9]+\\\\.[0-9]+|main-[0-9a-f]+)$\")"
 }
 
 # Releases the running image again when the deployment files change
