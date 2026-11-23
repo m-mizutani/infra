@@ -1,8 +1,9 @@
 # mztn-papers
 
 Infrastructure of [papers](https://github.com/m-mizutani/papers) on the
-`mztn-papers` project. Every release tag of papers is built and deployed
-without any change to the papers repository.
+`mztn-papers` project. Every release tag of papers and every push to its main
+branch (a merged pull request) is built and deployed without any change to the
+papers repository.
 
 ## Release flow
 
@@ -10,6 +11,8 @@ without any change to the papers repository.
 flowchart LR
   T["m-mizutani/papers<br/>tag vX.Y.Z"] -->|"Cloud Build: papers-build"| AR["Artifact Registry<br/>container-images/papers:vX.Y.Z"]
   AR -->|"Pub/Sub topic gcr (INSERT)"| D["Cloud Build: papers-deploy<br/>deploy/cloudbuild.yaml"]
+  M["m-mizutani/papers<br/>push to main"] -->|"Cloud Build: papers-main"| AR2["Artifact Registry<br/>container-images/papers:main-SHORT_SHA"]
+  AR2 -->|"Pub/Sub topic gcr (INSERT)"| D
   C["m-mizutani/infra<br/>deploy/** on main"] -->|"Cloud Build: papers-config"| D
   D -->|"config to GCS, gcloud deploy releases create"| CD["Cloud Deploy: papers"]
   CD -->|"predeploy"| FS["papers firestore migrate"]
@@ -20,9 +23,13 @@ flowchart LR
 
 - **papers-build** (`cloud-build.tf`): a tag `vX.Y.Z` on m-mizutani/papers
   builds the image from source and pushes `papers:vX.Y.Z` to Artifact Registry.
+- **papers-main** (`cloud-build.tf`): every push to main of m-mizutani/papers
+  (a merged pull request) builds the image the same way and pushes
+  `papers:main-<short commit SHA>`.
 - **papers-deploy**: Artifact Registry announces the push on the Pub/Sub
   topic `gcr` (the fixed topic name of Artifact Registry notifications). The
-  trigger keeps only `INSERT` of a release tag of the papers image and runs
+  trigger keeps only `INSERT` of a release tag or a main build of the papers
+  image and runs
   `deploy/cloudbuild.yaml` from this repository's main branch. It copies
   `deploy/config` to `gs://mztn-papers-config/releases/<release>/` and creates
   a Cloud Deploy release pinned to the image digest. A release that already
@@ -119,5 +126,5 @@ secrets or the other Terraform-managed resources.
    `terraform-apply-mztn-papers.yml` (Workload Identity Federation as
    `github-actions@mztn-papers.iam.gserviceaccount.com`).
 
-5. Push a release tag on m-mizutani/papers (or run the papers-build trigger
-   by hand on an existing tag) for the first deploy.
+5. Push a release tag on m-mizutani/papers or merge to its main (or run the
+   papers-build or papers-main trigger by hand) for the first deploy.

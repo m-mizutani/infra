@@ -10,11 +10,15 @@ locals {
   # (see README.md). Terraform links the repositories under it.
   cloudbuild_connection = "projects/${local.project_id}/locations/${local.region}/connections/github"
 
-  # Image built from m-mizutani/papers release tags
+  # Image built from m-mizutani/papers release tags and main
   papers_image = "${local.region}-docker.pkg.dev/${local.project_id}/${google_artifact_registry_repository.container_images.repository_id}/papers"
 
   # Release tags of m-mizutani/papers that are built and deployed
   papers_release_tag = "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
+
+  # Branch of m-mizutani/papers whose every push is built and deployed,
+  # as the image tag main-<short commit SHA>
+  papers_main_branch = "^main$"
 
   # Firestore Enterprise database used by papers
   firestore_database_id = "papers"
