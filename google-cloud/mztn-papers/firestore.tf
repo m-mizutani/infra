@@ -9,6 +9,12 @@ resource "google_firestore_database" "papers" {
   type             = "FIRESTORE_NATIVE"
   database_edition = "ENTERPRISE"
 
+  # papers uses the Firestore (Native mode) API and its realtime listeners
+  # (Snapshots). An Enterprise database has both off unless they are set at
+  # creation, and neither can be changed afterwards.
+  firestore_data_access_mode = "DATA_ACCESS_MODE_ENABLED"
+  realtime_updates_mode      = "REALTIME_UPDATES_MODE_ENABLED"
+
   delete_protection_state = "DELETE_PROTECTION_ENABLED"
 
   lifecycle {
