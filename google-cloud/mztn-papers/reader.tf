@@ -11,16 +11,9 @@ locals {
   reader_impersonators = [
     "user:mizutani.m@gmail.com",
   ]
-}
 
-resource "google_service_account" "papers_reader" {
-  account_id   = "papers-reader"
-  display_name = "Papers Reader Service Account"
-  description  = "Read-only access to the papers resources, used by impersonation"
-}
-
-resource "google_project_iam_member" "reader" {
-  for_each = toset([
+  # Read-only roles, also given to the claude service account (claude.tf)
+  reader_roles = [
     # Observability: all logs (including Data Access audit logs), metrics,
     # traces and errors
     "roles/logging.viewer",
@@ -55,7 +48,17 @@ resource "google_project_iam_member" "reader" {
     "roles/iam.workloadIdentityPoolViewer",
     # Enabled APIs
     "roles/serviceusage.serviceUsageViewer",
-  ])
+  ]
+}
+
+resource "google_service_account" "papers_reader" {
+  account_id   = "papers-reader"
+  display_name = "Papers Reader Service Account"
+  description  = "Read-only access to the papers resources, used by impersonation"
+}
+
+resource "google_project_iam_member" "reader" {
+  for_each = toset(local.reader_roles)
 
   project = local.project_id
   role    = each.value
