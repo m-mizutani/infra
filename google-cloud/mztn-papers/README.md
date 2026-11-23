@@ -36,14 +36,17 @@ flowchart LR
   is no sign-in. A browser without a valid session cookie becomes a new
   anonymous user. The `main` workspace has no `[authz]`, so every user may
   use it.
-- **Daily reset** (`scheduler.tf`): the postdeploy hook creates or updates the
-  Cloud Run job `papers-reset` with the deployed image, and Cloud Scheduler
-  runs it every day at 04:17 JST. The job runs
+- **Daily reset** (`scheduler.tf`): Cloud Scheduler runs the Cloud Run job
+  `papers-reset` every day at 04:17 JST. The job runs
   `papers firestore reset --force-dangerous-apply`, which deletes **every
   document** in the Firestore database and keeps its indexes and TTL policies.
-  The server keeps running, so a write during the reset may survive it, and
-  images in the attachments bucket are not deleted. Until the first release
-  after this was added, the job does not exist and the scheduled runs fail.
+  Terraform owns the job except its image, which the postdeploy hook switches
+  to the deployed image; until the first release it holds a placeholder image
+  and its runs fail harmlessly. The job runs as `papers-reset`, which may use
+  only the `papers` database (`roles/datastore.user` with an IAM condition),
+  and `papers-scheduler` may start only this job (`roles/run.invoker` on the
+  job). The server keeps running, so a write during the reset may survive it,
+  and images in the attachments bucket are not deleted.
   Run it by hand with `gcloud run jobs execute papers-reset --region=asia-northeast1`.
 
 Roll back with `gcloud deploy targets rollback papers-prod --delivery-pipeline=papers --region=asia-northeast1`.
