@@ -10,8 +10,11 @@ manifests:
 deploy:
   cloudrun: {}
 customActions:
-  # Predeploy hook (cloud-deploy.tf): create the Firestore indexes and TTL
-  # policies the new version needs before it takes traffic
+  # Predeploy hook (cloud-deploy.tf): `papers firestore migrate` creates the
+  # missing Firestore indexes and TTL policies the new version needs and waits
+  # until the indexes are READY, so the new version takes traffic only once
+  # they are usable. It is idempotent, so it runs on every release. The action keeps
+  # its name so the pipeline in cloud-deploy.tf does not change.
   - name: firestore-setup
     containers:
       - name: firestore-setup
@@ -19,6 +22,30 @@ customActions:
         command: ["/papers"]
         args:
           - firestore
-          - setup
+          - migrate
           - --firestore-project-id=mztn-papers
           - --firestore-database-id=papers
+  # Postdeploy hook (cloud-deploy.tf): point the Cloud Run job papers-reset at
+  # the image just deployed (created on the first release). Cloud Scheduler
+  # (scheduler.tf) runs it once a day to delete every Firestore document.
+  - name: reset-job
+    containers:
+      - name: reset-job
+        image: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+        command: ["gcloud"]
+        args:
+          - run
+          - jobs
+          - deploy
+          - papers-reset
+          - --project=mztn-papers
+          - --region=asia-northeast1
+          - --image=PAPERS_IMAGE
+          - --service-account=papers-runner@mztn-papers.iam.gserviceaccount.com
+          - --command=/papers
+          - --args=firestore,reset,--force-dangerous-apply,--firestore-project-id=mztn-papers,--firestore-database-id=papers
+          - --tasks=1
+          - --max-retries=0
+          - --task-timeout=30m
+          - --cpu=1
+          - --memory=512Mi

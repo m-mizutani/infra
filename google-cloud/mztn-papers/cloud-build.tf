@@ -1,7 +1,7 @@
 # Cloud Build triggers of the papers release flow:
 #
 #   papers v* tag --(papers-build)--> Artifact Registry --(Pub/Sub "gcr")-->
-#   papers-deploy --> Cloud Deploy release --> predeploy: firestore setup --> Cloud Run
+#   papers-deploy --> Cloud Deploy release --> predeploy: firestore migrate --> Cloud Run
 #
 # papers-config creates a release with the running image when the
 # deployment files (deploy/) change in this repository.

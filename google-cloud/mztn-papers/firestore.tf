@@ -1,5 +1,5 @@
 # Firestore Enterprise database for papers. Indexes and TTL policies are
-# created by `papers firestore setup`, the predeploy hook of every release
+# created by `papers firestore migrate`, the predeploy hook of every release
 # (deploy/skaffold.yaml), so they follow the papers version being deployed.
 
 resource "google_firestore_database" "papers" {

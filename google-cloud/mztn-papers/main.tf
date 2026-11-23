@@ -14,6 +14,7 @@ resource "google_project_service" "required_apis" {
     "pubsub.googleapis.com",
     "cloudbuild.googleapis.com",
     "clouddeploy.googleapis.com",
+    "cloudscheduler.googleapis.com",
   ])
 
   service = each.value

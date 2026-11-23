@@ -12,8 +12,10 @@ flowchart LR
   AR -->|"Pub/Sub topic gcr (INSERT)"| D["Cloud Build: papers-deploy<br/>deploy/cloudbuild.yaml"]
   C["m-mizutani/infra<br/>deploy/** on main"] -->|"Cloud Build: papers-config"| D
   D -->|"config to GCS, gcloud deploy releases create"| CD["Cloud Deploy: papers"]
-  CD -->|"predeploy"| FS["papers firestore setup"]
+  CD -->|"predeploy"| FS["papers firestore migrate"]
   FS --> CR["Cloud Run: papers"]
+  CR -->|"postdeploy"| RJ["Cloud Run job: papers-reset<br/>image updated"]
+  SC["Cloud Scheduler: papers-reset<br/>daily 04:17 JST"] -->|"run"| RJ
 ```
 
 - **papers-build** (`cloud-build.tf`): a tag `vX.Y.Z` on m-mizutani/papers
@@ -27,9 +29,22 @@ flowchart LR
   exists is skipped, since Pub/Sub delivers at least once.
 - **papers-config**: a change under `deploy/` on main releases the running
   image again with the new configuration.
-- **Cloud Deploy** (`cloud-deploy.tf`) runs `papers firestore setup` as a
+- **Cloud Deploy** (`cloud-deploy.tf`) runs `papers firestore migrate` as a
   predeploy hook (indexes and TTL policies), then deploys `deploy/service.yaml`.
   The Cloud Run service is owned by Cloud Deploy, not by Terraform.
+- **Anonymous mode** (`deploy/service.yaml`, `PAPERS_ANONYMOUS=true`): there
+  is no sign-in. A browser without a valid session cookie becomes a new
+  anonymous user. The `main` workspace has no `[authz]`, so every user may
+  use it.
+- **Daily reset** (`scheduler.tf`): the postdeploy hook creates or updates the
+  Cloud Run job `papers-reset` with the deployed image, and Cloud Scheduler
+  runs it every day at 04:17 JST. The job runs
+  `papers firestore reset --force-dangerous-apply`, which deletes **every
+  document** in the Firestore database and keeps its indexes and TTL policies.
+  The server keeps running, so a write during the reset may survive it, and
+  images in the attachments bucket are not deleted. Until the first release
+  after this was added, the job does not exist and the scheduled runs fail.
+  Run it by hand with `gcloud run jobs execute papers-reset --region=asia-northeast1`.
 
 Roll back with `gcloud deploy targets rollback papers-prod --delivery-pipeline=papers --region=asia-northeast1`.
 
@@ -37,9 +52,9 @@ Roll back with `gcloud deploy targets rollback papers-prod --delivery-pipeline=p
 
 | Path | Contents |
 |---|---|
-| `*.tf` | Project resources: APIs, Artifact Registry, Pub/Sub, Firestore Enterprise, buckets, service accounts, Cloud Build triggers, Cloud Deploy |
+| `*.tf` | Project resources: APIs, Artifact Registry, Pub/Sub, Firestore Enterprise, buckets, service accounts, Cloud Build triggers, Cloud Deploy, Cloud Scheduler |
 | `deploy/service.yaml` | The Cloud Run service (placeholders `PAPERS_*` are filled by `cloudbuild.yaml`) |
-| `deploy/skaffold.yaml` | Render and deploy config, and the `firestore-setup` custom action |
+| `deploy/skaffold.yaml` | Render and deploy config, and the custom actions `firestore-setup` (predeploy: `papers firestore migrate`) and `reset-job` (postdeploy: the papers-reset job) |
 | `deploy/cloudbuild.yaml` | Creates a release (run by papers-deploy and papers-config) |
 | `deploy/config/` | Workspace configuration: `workspaces/*.toml` (+ Rego policies) and `global.toml` |
 
