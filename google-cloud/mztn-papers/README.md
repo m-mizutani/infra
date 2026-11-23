@@ -54,9 +54,9 @@ Roll back with `gcloud deploy targets rollback papers-prod --delivery-pipeline=p
 ## Investigating (read-only)
 
 `papers-reader@mztn-papers.iam.gserviceaccount.com` (`reader.tf`) can read
-every resource of the project: the viewer role of each service in use, objects
-of the attachments, config and deploy buckets, and the papers database. It
-cannot read secret payloads or the Terraform state. Use it by impersonation
+every resource of the project: the project-wide viewer role of each service
+in use, all logs (Data Access audit logs too), metrics, traces and errors. It
+cannot read secret payloads. Use it by impersonation
 (the principals in `reader_impersonators`):
 
 ```bash
