@@ -24,7 +24,10 @@ steps:
         if [ -n "${_TAG}" ]; then
           # Pin the release to the digest of the pushed tag
           image="${_DIGEST}"
-          version="$${_TAG##*:}"
+          # ${_TAG} is a Cloud Build substitution; the ##*: expansion works
+          # only on a bash variable
+          tag="${_TAG}"
+          version="$${tag##*:}"
         else
           image=$(gcloud run services describe papers --region="${_REGION}" \
             --format='value(spec.template.spec.containers[0].image)' 2>/dev/null || true)
