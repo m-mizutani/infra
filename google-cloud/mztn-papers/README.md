@@ -51,6 +51,20 @@ flowchart LR
 
 Roll back with `gcloud deploy targets rollback papers-prod --delivery-pipeline=papers --region=asia-northeast1`.
 
+## Investigating (read-only)
+
+`papers-reader@mztn-papers.iam.gserviceaccount.com` (`reader.tf`) can read
+every resource of the project: the viewer role of each service in use, objects
+of the attachments, config and deploy buckets, and the papers database. It
+cannot read secret payloads or the Terraform state. Use it by impersonation
+(the principals in `reader_impersonators`):
+
+```bash
+gcloud config set auth/impersonate_service_account papers-reader@mztn-papers.iam.gserviceaccount.com
+gcloud deploy rollouts list --delivery-pipeline=papers --release=<release> --region=asia-northeast1 --project=mztn-papers
+gcloud logging read 'resource.type="cloud_run_revision"' --project=mztn-papers --limit=50
+```
+
 ## Layout
 
 | Path | Contents |
