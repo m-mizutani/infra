@@ -107,6 +107,14 @@ resource "google_storage_bucket_iam_member" "builder_buckets" {
   member = local.builder_member
 }
 
+# `gcloud deploy releases create` reads the staging bucket itself
+# (storage.buckets.get), which objectUser does not include
+resource "google_storage_bucket_iam_member" "builder_deploy_bucket_viewer" {
+  bucket = google_storage_bucket.deploy.name
+  role   = "roles/storage.legacyBucketReader"
+  member = local.builder_member
+}
+
 # Creating a release acts as the Cloud Deploy execution service account
 resource "google_service_account_iam_member" "builder_acts_as_deployer" {
   service_account_id = google_service_account.papers_deployer.name
@@ -194,6 +202,14 @@ resource "google_artifact_registry_repository_iam_member" "deployer_reader" {
 resource "google_storage_bucket_iam_member" "deployer_deploy_bucket" {
   bucket = google_storage_bucket.deploy.name
   role   = "roles/storage.objectUser"
+  member = local.deployer_member
+}
+
+# Cloud Deploy jobs read the artifact storage bucket itself
+# (storage.buckets.get), which objectUser does not include
+resource "google_storage_bucket_iam_member" "deployer_deploy_bucket_viewer" {
+  bucket = google_storage_bucket.deploy.name
+  role   = "roles/storage.legacyBucketReader"
   member = local.deployer_member
 }
 
