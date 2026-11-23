@@ -65,6 +65,13 @@ gcloud deploy rollouts list --delivery-pipeline=papers --release=<release> --reg
 gcloud logging read 'resource.type="cloud_run_revision"' --project=mztn-papers --limit=50
 ```
 
+`claude@mztn-papers.iam.gserviceaccount.com` (`claude.tf`) is the account
+Claude (AI agent) works as, by impersonation (`claude_impersonators`). It reads
+what papers-reader reads, and may also publish to the Pub/Sub topic `gcr`
+(start papers-deploy by hand), operate releases and rollouts of the papers
+pipeline (as papers-deployer), and administer Firestore. It cannot change IAM,
+secrets or the other Terraform-managed resources.
+
 ## Layout
 
 | Path | Contents |
