@@ -21,6 +21,13 @@ resource "google_service_account" "papers_deployer" {
   description  = "Execution Service Account for the papers Cloud Deploy pipeline"
 }
 
+# Runs the papers-reset Cloud Run job (Firestore of the papers database only)
+resource "google_service_account" "papers_reset" {
+  account_id   = "papers-reset"
+  display_name = "Papers Reset Service Account"
+  description  = "Service Account for the papers-reset Cloud Run job"
+}
+
 # Identity of Cloud Scheduler when it starts the daily papers-reset job
 resource "google_service_account" "papers_scheduler" {
   account_id   = "papers-scheduler"
