@@ -55,7 +55,7 @@ Roll back with `gcloud deploy targets rollback papers-prod --delivery-pipeline=p
 
 | Path | Contents |
 |---|---|
-| `*.tf` | Project resources: APIs, Artifact Registry, Pub/Sub, Firestore Enterprise, buckets, service accounts, Cloud Build triggers, Cloud Deploy, Cloud Scheduler |
+| `*.tf` | Project resources: APIs, Artifact Registry, Pub/Sub, Firestore Enterprise, buckets, service accounts, Cloud Build triggers, Cloud Deploy, Cloud Scheduler, the read-only papers-reader |
 | `deploy/service.yaml` | The Cloud Run service (placeholders `PAPERS_*` are filled by `cloudbuild.yaml`) |
 | `deploy/skaffold.yaml` | Render and deploy config, and the custom actions `firestore-setup` (predeploy: `papers firestore migrate`) and `reset-job` (postdeploy: the papers-reset job) |
 | `deploy/cloudbuild.yaml` | Creates a release (run by papers-deploy and papers-config) |
