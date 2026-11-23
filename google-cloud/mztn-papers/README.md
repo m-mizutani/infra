@@ -51,11 +51,25 @@ flowchart LR
 
 Roll back with `gcloud deploy targets rollback papers-prod --delivery-pipeline=papers --region=asia-northeast1`.
 
+## Investigating (read-only)
+
+`papers-reader@mztn-papers.iam.gserviceaccount.com` (`reader.tf`) can read
+every resource of the project: the project-wide viewer role of each service
+in use, all logs (Data Access audit logs too), metrics, traces and errors. It
+cannot read secret payloads. Use it by impersonation
+(the principals in `reader_impersonators`):
+
+```bash
+gcloud config set auth/impersonate_service_account papers-reader@mztn-papers.iam.gserviceaccount.com
+gcloud deploy rollouts list --delivery-pipeline=papers --release=<release> --region=asia-northeast1 --project=mztn-papers
+gcloud logging read 'resource.type="cloud_run_revision"' --project=mztn-papers --limit=50
+```
+
 ## Layout
 
 | Path | Contents |
 |---|---|
-| `*.tf` | Project resources: APIs, Artifact Registry, Pub/Sub, Firestore Enterprise, buckets, service accounts, Cloud Build triggers, Cloud Deploy, Cloud Scheduler |
+| `*.tf` | Project resources: APIs, Artifact Registry, Pub/Sub, Firestore Enterprise, buckets, service accounts, Cloud Build triggers, Cloud Deploy, Cloud Scheduler, the read-only papers-reader |
 | `deploy/service.yaml` | The Cloud Run service (placeholders `PAPERS_*` are filled by `cloudbuild.yaml`) |
 | `deploy/skaffold.yaml` | Render and deploy config, and the custom actions `firestore-setup` (predeploy: `papers firestore migrate`) and `reset-job` (postdeploy: the papers-reset job) |
 | `deploy/cloudbuild.yaml` | Creates a release (run by papers-deploy and papers-config) |
