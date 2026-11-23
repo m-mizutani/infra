@@ -142,12 +142,19 @@ resource "google_project_iam_member" "deployer" {
     "roles/logging.logWriter",
     # Deploy the papers service and update the papers-reset job (no IAM)
     "roles/run.developer",
-    # deploy/service.yaml disables the invoker IAM check (below)
-    google_project_iam_custom_role.run_invoker_check.id,
   ])
 
   project = local.project_id
   role    = each.value
+  member  = local.deployer_member
+}
+
+# deploy/service.yaml disables the invoker IAM check. A resource of its own,
+# since the custom role's ID is known only after apply and cannot be a
+# for_each key.
+resource "google_project_iam_member" "deployer_run_invoker_check" {
+  project = local.project_id
+  role    = google_project_iam_custom_role.run_invoker_check.id
   member  = local.deployer_member
 }
 
