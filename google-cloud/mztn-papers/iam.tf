@@ -4,13 +4,20 @@ locals {
   runner_member   = "serviceAccount:${google_service_account.papers_runner.email}"
   builder_member  = "serviceAccount:${google_service_account.papers_builder.email}"
   deployer_member = "serviceAccount:${google_service_account.papers_deployer.email}"
+
+  # IAM condition limiting a Firestore role to the papers database (and the
+  # resources under it, such as its indexes)
+  papers_database = "projects/${local.project_id}/databases/${local.firestore_database_id}"
+  papers_database_condition = {
+    title      = "papers-database-only"
+    expression = "resource.name == \"${local.papers_database}\" || resource.name.startsWith(\"${local.papers_database}/\")"
+  }
 }
 
 # --- runner ---------------------------------------------------------------
 
 resource "google_project_iam_member" "runner" {
   for_each = toset([
-    "roles/datastore.user",
     "roles/logging.logWriter",
     "roles/monitoring.metricWriter",
   ])
@@ -20,9 +27,22 @@ resource "google_project_iam_member" "runner" {
   member  = local.runner_member
 }
 
+# Firestore data of the papers database only
+resource "google_project_iam_member" "runner_datastore" {
+  project = local.project_id
+  role    = "roles/datastore.user"
+  member  = local.runner_member
+
+  condition {
+    title      = local.papers_database_condition.title
+    expression = local.papers_database_condition.expression
+  }
+}
+
+# Objects only (no IAM of the bucket or its objects)
 resource "google_storage_bucket_iam_member" "runner_attachments" {
   bucket = google_storage_bucket.attachments.name
-  role   = "roles/storage.objectAdmin"
+  role   = "roles/storage.objectUser"
   member = local.runner_member
 }
 
@@ -37,13 +57,36 @@ resource "google_storage_bucket_iam_member" "runner_config" {
 resource "google_project_iam_member" "builder" {
   for_each = toset([
     "roles/logging.logWriter",
-    "roles/clouddeploy.releaser",
+    # Read-only: the Cloud Deploy config of the region, which
+    # `gcloud deploy releases create` reads; releases are created only on
+    # the papers pipeline (below)
+    "roles/clouddeploy.viewer",
+    # Read-only: the image and version of the running papers service
+    # (papers-config). The service is owned by Cloud Deploy, so Terraform
+    # cannot bind on it.
     "roles/run.viewer",
   ])
 
   project = local.project_id
   role    = each.value
   member  = local.builder_member
+}
+
+# Creating releases (and their rollouts) on the papers pipeline and target only
+resource "google_clouddeploy_delivery_pipeline_iam_member" "builder_releaser" {
+  project  = local.project_id
+  location = google_clouddeploy_delivery_pipeline.papers.location
+  name     = google_clouddeploy_delivery_pipeline.papers.name
+  role     = "roles/clouddeploy.releaser"
+  member   = local.builder_member
+}
+
+resource "google_clouddeploy_target_iam_member" "builder_releaser" {
+  project  = local.project_id
+  location = google_clouddeploy_target.prod.location
+  name     = google_clouddeploy_target.prod.name
+  role     = "roles/clouddeploy.releaser"
+  member   = local.builder_member
 }
 
 resource "google_artifact_registry_repository_iam_member" "builder_writer" {
@@ -60,7 +103,7 @@ resource "google_storage_bucket_iam_member" "builder_buckets" {
   ])
 
   bucket = each.value
-  role   = "roles/storage.objectAdmin"
+  role   = "roles/storage.objectUser"
   member = local.builder_member
 }
 
@@ -94,17 +137,44 @@ resource "google_project_iam_member" "cloudbuild_agent_secret_admin" {
 
 resource "google_project_iam_member" "deployer" {
   for_each = toset([
+    # Required by Cloud Deploy on the execution service account
     "roles/clouddeploy.jobRunner",
     "roles/logging.logWriter",
-    # Cloud Run service, including the invoker IAM check setting
-    "roles/run.admin",
-    # papers firestore migrate: indexes and TTL policies
-    "roles/datastore.owner",
+    # Deploy the papers service and update the papers-reset job (no IAM)
+    "roles/run.developer",
+    # deploy/service.yaml disables the invoker IAM check (below)
+    google_project_iam_custom_role.run_invoker_check.id,
   ])
 
   project = local.project_id
   role    = each.value
   member  = local.deployer_member
+}
+
+# Turning the invoker IAM check off (run.googleapis.com/invoker-iam-disabled)
+# is an IAM change of the service, which run.developer does not include
+resource "google_project_iam_custom_role" "run_invoker_check" {
+  project     = local.project_id
+  role_id     = "papersRunInvokerCheck"
+  title       = "papers: Cloud Run invoker IAM check"
+  description = "Read and set the IAM policy of Cloud Run services, to turn the invoker IAM check off"
+  permissions = [
+    "run.services.getIamPolicy",
+    "run.services.setIamPolicy",
+  ]
+}
+
+# papers firestore migrate: indexes and TTL policies of the papers database
+# only, and no access to its documents
+resource "google_project_iam_member" "deployer_datastore" {
+  project = local.project_id
+  role    = "roles/datastore.indexAdmin"
+  member  = local.deployer_member
+
+  condition {
+    title      = local.papers_database_condition.title
+    expression = local.papers_database_condition.expression
+  }
 }
 
 resource "google_artifact_registry_repository_iam_member" "deployer_reader" {
@@ -116,7 +186,7 @@ resource "google_artifact_registry_repository_iam_member" "deployer_reader" {
 
 resource "google_storage_bucket_iam_member" "deployer_deploy_bucket" {
   bucket = google_storage_bucket.deploy.name
-  role   = "roles/storage.objectAdmin"
+  role   = "roles/storage.objectUser"
   member = local.deployer_member
 }
 

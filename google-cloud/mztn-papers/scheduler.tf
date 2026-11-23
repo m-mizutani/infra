@@ -65,8 +65,8 @@ resource "google_project_iam_member" "reset_datastore_user" {
   member  = "serviceAccount:${google_service_account.papers_reset.email}"
 
   condition {
-    title      = "papers-database-only"
-    expression = "resource.name == \"projects/${local.project_id}/databases/${local.firestore_database_id}\""
+    title      = local.papers_database_condition.title
+    expression = local.papers_database_condition.expression
   }
 }
 

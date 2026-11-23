@@ -19,7 +19,9 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
     "attribute.ref"        = "assertion.ref"
   }
 
-  attribute_condition = "assertion.repository == '${local.github_repository}'"
+  # Only the main branch of the infra repository (terraform-apply-mztn-papers
+  # runs on pushes to main); other branches and pull requests get no token
+  attribute_condition = "assertion.repository == '${local.github_repository}' && assertion.ref == 'refs/heads/main'"
 
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
@@ -43,11 +45,11 @@ resource "google_service_account_iam_binding" "github_actions_workload_identity"
   ]
 }
 
-# Grant necessary permissions to the service account
+# Terraform manages every resource of the project, IAM included, so it needs
+# owner (which includes iam.serviceAccountUser). Only main can get a token.
 resource "google_project_iam_member" "github_actions_permissions" {
   for_each = toset([
     "roles/owner",
-    "roles/iam.serviceAccountUser",
   ])
 
   project = local.project_id
