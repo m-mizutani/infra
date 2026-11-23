@@ -6,7 +6,7 @@
 
 - `google-cloud/mztn-service/` - メインのプロダクション環境
 - `google-cloud/mztn-seccamp2025/` - セキュリティキャンプ用環境
-- `google-cloud/mztn-papers/` - papers 専用環境（papers のリリースタグから Cloud Build → Artifact Registry → Pub/Sub → Cloud Deploy で自動デプロイ。Cloud Scheduler が毎日 Firestore の全データを消す papers-reset ジョブを実行する。詳細は同ディレクトリの README.md）
+- `google-cloud/mztn-papers/` - papers 専用環境（papers のリリースタグから Cloud Build → Artifact Registry → Pub/Sub → Cloud Deploy で自動デプロイ。サインインなしの anonymous モードで動き、Cloud Scheduler が毎日 Firestore の全データを消す papers-reset ジョブを実行する。詳細は同ディレクトリの README.md）
 - `images/` - 各サービスの Dockerfile
 - `.github/workflows/` - CI/CD ワークフロー
 

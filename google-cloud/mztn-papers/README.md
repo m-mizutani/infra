@@ -32,6 +32,10 @@ flowchart LR
 - **Cloud Deploy** (`cloud-deploy.tf`) runs `papers firestore migrate` as a
   predeploy hook (indexes and TTL policies), then deploys `deploy/service.yaml`.
   The Cloud Run service is owned by Cloud Deploy, not by Terraform.
+- **Anonymous mode** (`deploy/service.yaml`, `PAPERS_ANONYMOUS=true`): there
+  is no sign-in. A browser without a valid session cookie becomes a new
+  anonymous user. The `main` workspace has no `[authz]`, so every user may
+  use it.
 - **Daily reset** (`scheduler.tf`): the postdeploy hook creates or updates the
   Cloud Run job `papers-reset` with the deployed image, and Cloud Scheduler
   runs it every day at 04:17 JST. The job runs

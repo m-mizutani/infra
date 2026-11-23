@@ -40,6 +40,11 @@ spec:
               value: ":8080"
             - name: PAPERS_BASE_URL
               value: PAPERS_BASE_URL
+            # Anonymous mode: no sign-in; each browser without a session
+            # becomes a new anonymous user. The data is reset daily
+            # (scheduler.tf).
+            - name: PAPERS_ANONYMOUS
+              value: "true"
             - name: PAPERS_LOG_FORMAT
               value: json
             - name: PAPERS_REPOSITORY_BACKEND

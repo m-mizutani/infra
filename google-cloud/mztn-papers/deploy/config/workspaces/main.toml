@@ -1,5 +1,6 @@
 # Workspace definition of papers (one TOML file per workspace).
-# No [authz]: every signed-in user may use this workspace.
+# No [authz]: every user may use this workspace, anonymous users included
+# (the service runs in anonymous mode, deploy/service.yaml).
 [workspace]
 id = "main"
 name = "Papers"
