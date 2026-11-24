@@ -1,4 +1,11 @@
-# Image attachments of papers
+# Image attachments of papers, and the documents of HTML papers.
+# The daily reset (scheduler.tf) deletes every attachment's metadata in
+# Firestore but not the objects, and `papers firestore reset --demo` uploads
+# the sample attachments again each time, so objects older than a day are no
+# longer referenced. The lifecycle rules delete them after 7 days (the
+# margin is for days the reset fails), and, because versioning keeps a
+# deleted object as a noncurrent version, delete noncurrent versions 1 day
+# after they became noncurrent.
 resource "google_storage_bucket" "attachments" {
   name     = "mztn-papers-attachments"
   location = local.region
@@ -12,6 +19,25 @@ resource "google_storage_bucket" "attachments" {
 
   versioning {
     enabled = true
+  }
+
+  lifecycle_rule {
+    condition {
+      age        = 7
+      with_state = "LIVE"
+    }
+    action {
+      type = "Delete"
+    }
+  }
+
+  lifecycle_rule {
+    condition {
+      days_since_noncurrent_time = 1
+    }
+    action {
+      type = "Delete"
+    }
   }
 }
 

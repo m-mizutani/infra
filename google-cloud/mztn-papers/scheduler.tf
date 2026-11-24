@@ -1,7 +1,8 @@
 # Daily reset of the papers data: Cloud Scheduler runs the Cloud Run job
 # papers-reset (`papers firestore reset --force-dangerous-apply`), which
 # deletes every Firestore document and keeps the indexes and TTL policies.
-# Images in the attachments bucket are not deleted.
+# Objects in the attachments bucket are not deleted by the job; the
+# bucket's lifecycle rules delete them (cloud-storage.tf).
 #
 # Terraform owns the job except its image: the postdeploy hook of Cloud
 # Deploy (deploy/skaffold.yaml) switches it to the image of each release.
