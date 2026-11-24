@@ -1,18 +1,25 @@
 # Daily reset of the papers data: Cloud Scheduler runs the Cloud Run job
-# papers-reset (`papers firestore reset --force-dangerous-apply`), which
-# deletes every Firestore document and keeps the indexes and TTL policies.
-# Objects in the attachments bucket are not deleted by the job; the
-# bucket's lifecycle rules delete them (cloud-storage.tf).
+# papers-reset (`papers firestore reset --force-dangerous-apply --demo`),
+# which deletes every Firestore document (the indexes and TTL policies are
+# kept), then creates each workspace's home and writes the sample papers.
+# The sample images are uploaded to the attachments bucket again on each run;
+# the job does not delete objects there, the bucket's lifecycle rules do
+# (cloud-storage.tf).
 #
-# Terraform owns the job except its image: the postdeploy hook of Cloud
-# Deploy (deploy/skaffold.yaml) switches it to the image of each release.
+# Terraform owns the job except its image and PAPERS_CONFIG: the postdeploy
+# hook of Cloud Deploy (deploy/skaffold.yaml) switches them to the image and
+# the workspace configuration (gs://mztn-papers-config/releases/<release>)
+# of each release, so the job uses the same configuration as the service.
 # Until the first release, the job holds a placeholder image and its runs
-# fail without touching anything.
+# fail without touching anything; without PAPERS_CONFIG, --demo fails before
+# anything is deleted.
 #
-# Permissions are scoped to this job and this database:
+# Permissions are scoped to this job, this database and these buckets:
 #   papers-scheduler: run.invoker on the job only
-#   papers-reset:     datastore.user on the papers database only
-#   papers-deployer:  acts as papers-reset to update the job's image
+#   papers-reset:     datastore.user on the papers database only,
+#                     objectUser on the attachments bucket,
+#                     objectViewer on the config bucket
+#   papers-deployer:  acts as papers-reset to update the job
 
 resource "google_cloud_run_v2_job" "papers_reset" {
   name     = "papers-reset"
@@ -33,9 +40,19 @@ resource "google_cloud_run_v2_job" "papers_reset" {
           "firestore",
           "reset",
           "--force-dangerous-apply",
+          "--demo",
           "--firestore-project-id=${local.project_id}",
           "--firestore-database-id=${local.firestore_database_id}",
+          "--attachment-backend=gcs",
+          "--attachment-bucket=${google_storage_bucket.attachments.name}",
         ]
+
+        # The whole config bucket; PAPERS_CONFIG, set by the postdeploy
+        # hook, points at the release under /config/releases
+        volume_mounts {
+          name       = "config"
+          mount_path = "/config"
+        }
 
         resources {
           limits = {
@@ -44,13 +61,25 @@ resource "google_cloud_run_v2_job" "papers_reset" {
           }
         }
       }
+
+      volumes {
+        name = "config"
+        gcs {
+          bucket    = google_storage_bucket.config.name
+          read_only = true
+          # The release prefixes have no directory objects
+          mount_options = ["implicit-dirs"]
+        }
+      }
     }
   }
 
   lifecycle {
-    # Set by the postdeploy hook (gcloud run jobs update --image)
+    # Set by the postdeploy hook (gcloud run jobs update --image
+    # --update-env-vars=PAPERS_CONFIG=...)
     ignore_changes = [
       template[0].template[0].containers[0].image,
+      template[0].template[0].containers[0].env,
       client,
       client_version,
     ]
@@ -69,6 +98,20 @@ resource "google_project_iam_member" "reset_datastore_user" {
     title      = local.papers_database_condition.title
     expression = local.papers_database_condition.expression
   }
+}
+
+# --demo uploads the sample images (objects only, no IAM of the bucket)
+resource "google_storage_bucket_iam_member" "reset_attachments" {
+  bucket = google_storage_bucket.attachments.name
+  role   = "roles/storage.objectUser"
+  member = "serviceAccount:${google_service_account.papers_reset.email}"
+}
+
+# The workspace configuration --demo reads
+resource "google_storage_bucket_iam_member" "reset_config" {
+  bucket = google_storage_bucket.config.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_service_account.papers_reset.email}"
 }
 
 resource "google_project_iam_member" "reset_log_writer" {
@@ -96,7 +139,7 @@ resource "google_cloud_run_v2_job_iam_member" "scheduler_invoker" {
 resource "google_cloud_scheduler_job" "papers_reset" {
   name        = "papers-reset"
   region      = local.region
-  description = "Delete every document of the papers Firestore database once a day"
+  description = "Delete every document of the papers Firestore database and write the sample papers once a day"
   schedule    = "17 4 * * *"
   time_zone   = "Asia/Tokyo"
 

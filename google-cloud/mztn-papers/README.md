@@ -43,22 +43,23 @@ flowchart LR
   is no sign-in. A browser without a valid session cookie becomes a new
   anonymous user. The `main` workspace has no `[authz]`, so every user may
   use it.
-- **Demo mode** (`deploy/service.yaml`, `PAPERS_DEMO=true`): at startup the
-  server fills each workspace that is still empty (no papers but an empty
-  home) with sample papers, once. After the daily reset, the samples come back
-  only when an instance starts (a deploy or a new instance), because the
-  running instance does not seed again.
 - **Daily reset** (`scheduler.tf`): Cloud Scheduler runs the Cloud Run job
   `papers-reset` every day at 04:17 JST. The job runs
-  `papers firestore reset --force-dangerous-apply`, which deletes **every
-  document** in the Firestore database and keeps its indexes and TTL policies.
-  Terraform owns the job except its image, which the postdeploy hook switches
-  to the deployed image; until the first release it holds a placeholder image
-  and its runs fail harmlessly. The job runs as `papers-reset`, which may use
-  only the `papers` database (`roles/datastore.user` with an IAM condition),
-  and `papers-scheduler` may start only this job (`roles/run.invoker` on the
-  job). The server keeps running, so a write during the reset may survive it,
-  and the job does not delete objects in the attachments bucket.
+  `papers firestore reset --force-dangerous-apply --demo`, which deletes
+  **every document** in the Firestore database (its indexes and TTL policies
+  are kept), then creates the home of each workspace and writes the sample
+  papers, uploading their images to the attachments bucket. The job mounts
+  the config bucket and reads the workspace configuration of the deployed
+  release. Terraform owns the job except its image and `PAPERS_CONFIG`, which
+  the postdeploy hook switches to the deployed image and release; until the
+  first release it holds a placeholder image and its runs fail harmlessly, and
+  without `PAPERS_CONFIG` `--demo` fails before anything is deleted. The job
+  runs as `papers-reset`, which may use only the `papers` database
+  (`roles/datastore.user` with an IAM condition), write objects of the
+  attachments bucket and read the config bucket, and `papers-scheduler` may
+  start only this job (`roles/run.invoker` on the job). The server keeps
+  running, so a write during the reset may survive it, and the job does not
+  delete objects in the attachments bucket.
 - **Attachment cleanup** (`cloud-storage.tf`): after a reset no attachment
   object is referenced any more, so lifecycle rules on the attachments bucket
   delete objects 7 days after they were created (the margin covers days the

@@ -45,11 +45,6 @@ spec:
             # (scheduler.tf).
             - name: PAPERS_ANONYMOUS
               value: "true"
-            # Demo mode: at startup, fill each workspace that is still empty
-            # (no papers but an empty home) with sample papers, once.
-            # Servers built before --demo existed ignore it.
-            - name: PAPERS_DEMO
-              value: "true"
             - name: PAPERS_LOG_FORMAT
               value: json
             - name: PAPERS_REPOSITORY_BACKEND
