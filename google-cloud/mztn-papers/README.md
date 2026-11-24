@@ -58,7 +58,12 @@ flowchart LR
   only the `papers` database (`roles/datastore.user` with an IAM condition),
   and `papers-scheduler` may start only this job (`roles/run.invoker` on the
   job). The server keeps running, so a write during the reset may survive it,
-  and images in the attachments bucket are not deleted.
+  and the job does not delete objects in the attachments bucket.
+- **Attachment cleanup** (`cloud-storage.tf`): after a reset no attachment
+  object is referenced any more, so lifecycle rules on the attachments bucket
+  delete objects 7 days after they were created (the margin covers days the
+  reset fails) and, because the bucket keeps versions, delete noncurrent
+  versions 1 day after they became noncurrent.
   Run it by hand with `gcloud run jobs execute papers-reset --region=asia-northeast1`.
 
 Roll back with `gcloud deploy targets rollback papers-prod --delivery-pipeline=papers --region=asia-northeast1`.
