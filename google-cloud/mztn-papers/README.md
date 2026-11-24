@@ -43,6 +43,11 @@ flowchart LR
   is no sign-in. A browser without a valid session cookie becomes a new
   anonymous user. The `main` workspace has no `[authz]`, so every user may
   use it.
+- **Demo mode** (`deploy/service.yaml`, `PAPERS_DEMO=true`): at startup the
+  server fills each workspace that is still empty (no papers but an empty
+  home) with sample papers, once. After the daily reset, the samples come back
+  only when an instance starts (a deploy or a new instance), because the
+  running instance does not seed again.
 - **Daily reset** (`scheduler.tf`): Cloud Scheduler runs the Cloud Run job
   `papers-reset` every day at 04:17 JST. The job runs
   `papers firestore reset --force-dangerous-apply`, which deletes **every
